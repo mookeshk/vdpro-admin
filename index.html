@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Downloader Pro - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-elevated: #334155;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --border: #334155;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-orange: #f59e0b;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-main); color: var(--text-main); font-family: var(--font-family); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar { width: 250px; background: var(--bg-card); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; }
+        .brand { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .brand h2 { margin: 0; font-size: 18px; color: var(--accent-blue); }
+        .brand span { font-size: 12px; color: var(--text-sub); }
+        
+        .nav-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--text-sub); transition: 0.2s; font-weight: bold; }
+        .nav-item:hover, .nav-item.active { background: var(--bg-elevated); color: var(--text-main); border-right: 4px solid var(--accent-blue); }
+        
+        /* Main Content */
+        .content { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        h1 { margin-top: 0; font-size: 24px; margin-bottom: 20px; }
+
+        /* Cards & Tables */
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-sub); font-size: 13px; font-weight: normal; }
+        td { font-size: 14px; }
+        
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .badge-active { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .badge-trial { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+
+        /* Buttons & Inputs */
+        button { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: inherit; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        button.btn-danger { background: var(--accent-red); }
+        button.btn-success { background: var(--accent-green); }
+        
+        select, input { background: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; outline: none; font-family: inherit; }
+        
+        /* Auth Overlay */
+        #authOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-main); z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .auth-box { background: var(--bg-card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); width: 350px; text-align: center; }
+        .auth-box input { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+        .auth-box button { width: 100%; }
+
+        /* Package Form */
+        .flex-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <!-- Edit Package Modal -->
+    <div id="editPackageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+        <div class="auth-box">
+            <h2 style="color:var(--text-main); font-size: 18px; margin-bottom: 20px;">تعديل الباقة</h2>
+            <input type="hidden" id="editPkgId" />
+            <input type="text" id="editPkgName" placeholder="اسم الباقة" style="width:100%; margin-bottom:15px; box-sizing:border-box;" />
+            <input type="text" id="editPkgPrice" placeholder="السعر" style="width:100%; margin-bottom:15px; box-sizing:border-box;" />
+            <input type="number" id="editPkgDuration" placeholder="المدة بالأيام (مثال: 90)" style="width:100%; margin-bottom:20px; box-sizing:border-box;" />
+            <div style="display:flex; gap:10px;">
+                <button onclick="saveEditedPackage()" style="flex:1;">حفظ</button>
+                <button onclick="document.getElementById('editPackageModal').style.display='none'" class="btn-danger" style="flex:1;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Overlay -->
+    <div id="authOverlay">
+        <div class="auth-box">
+            <h2 style="color:var(--accent-blue);"><i class="fas fa-shield-alt"></i> لوحة الإدارة</h2>
+            <p style="color:var(--text-sub); font-size: 13px; margin-bottom: 20px;">تسجيل الدخول مسموح فقط للمدير</p>
+            <input type="email" id="adminEmail" placeholder="البريد الإلكتروني" />
+            <input type="password" id="adminPass" placeholder="كلمة المرور" />
+            <button onclick="loginAdmin()">دخول</button>
+            <div id="authError" style="color:var(--accent-red); font-size: 12px; margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <h2>لوحة التحكم</h2>
+            <span>Video Downloader Pro</span>
+        </div>
+        <div class="nav-item active" onclick="switchPage('usersPage', this)"><i class="fas fa-users"></i> إدارة العملاء</div>
+        <div class="nav-item" onclick="switchPage('packagesPage', this)"><i class="fas fa-box"></i> إدارة الباقات</div>
+        <div style="flex:1;"></div>
+        <div class="nav-item" style="color:var(--accent-red);" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        
+        <!-- Users Page -->
+        <div id="usersPage" class="page active">
+            <h1>إدارة العملاء</h1>
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="flex-row">
+                    <input type="text" id="filterEmail" placeholder="بحث بالإيميل..." onkeyup="renderUsers()" style="flex:2;" />
+                    <select id="filterStatus" onchange="renderUsers()" style="flex:1;">
+                        <option value="all">جميع الحالات</option>
+                        <option value="active">مفعل</option>
+                        <option value="trial">فترة تجريبية</option>
+                    </select>
+                    <select id="filterPackage" onchange="renderUsers()" style="flex:1;">
+                        <option value="all">جميع الباقات</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>البريد الإلكتروني</th>
+                            <th>تاريخ الانضمام</th>
+                            <th>الحالة</th>
+                            <th>الباقة الحالية</th>
+                            <th>إجراءات التحكم</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="5" style="text-align:center;">جاري تحميل البيانات...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Packages Page -->
+        <div id="packagesPage" class="page">
+            <h1>إدارة الباقات والأسعار</h1>
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="flex-row">
+                    <input type="text" id="newPkgName" placeholder="اسم الباقة (مثال: الباقة الذهبية)" style="flex:2;" />
+                    <input type="text" id="newPkgPrice" placeholder="السعر (مثال: 50$)" style="flex:1;" />
+                    <input type="number" id="newPkgDuration" placeholder="المدة بالأيام" style="flex:1;" />
+                    <button onclick="addPackage()"><i class="fas fa-plus"></i> إضافة الباقة</button>
+                </div>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>اسم الباقة</th>
+                            <th>السعر</th>
+                            <th>المدة (أيام)</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="packagesTableBody">
+                        <tr><td colspan="4" style="text-align:center;">جاري تحميل الباقات...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeLAM_PeieqjvwVdqbp3rh3lzS8Oz5JxM",
+            authDomain: "videodownloaderpro-c7d45.firebaseapp.com",
+            projectId: "videodownloaderpro-c7d45",
+            storageBucket: "videodownloaderpro-c7d45.firebasestorage.app",
+            messagingSenderId: "481931785419",
+            appId: "1:481931785419:web:4bbc9fe7a3ad4cc6d9174e"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const ADMIN_EMAIL = "eng.mo.keshk@gmail.com";
+        let globalPackages = [];
+
+        // Auth Logic
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    document.getElementById('authOverlay').style.display = 'none';
+                    loadPackages();
+                    loadUsers();
+                } else {
+                    document.getElementById('authError').innerText = "غير مصرح لك بالدخول!";
+                    auth.signOut();
+                }
+            } else {
+                document.getElementById('authOverlay').style.display = 'flex';
+            }
+        });
+
+        function loginAdmin() {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+            auth.signInWithEmailAndPassword(email, pass).catch(err => {
+                document.getElementById('authError').innerText = "خطأ في بيانات الدخول";
+            });
+        }
+
+        function logout() { auth.signOut(); }
+
+        // Navigation
+        function switchPage(pageId, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Packages Logic
+        function loadPackages() {
+            db.collection("packages").onSnapshot(snapshot => {
+                globalPackages = [];
+                let html = "";
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    globalPackages.push({ id: doc.id, ...data });
+                    html += `
+                        <tr>
+                            <td>${data.name}</td>
+                            <td>${data.price}</td>
+                            <td>${data.duration || 'غير محدد'}</td>
+                            <td>
+                                <button class="btn-success" onclick="editPackage('${doc.id}', '${data.name}', '${data.price}', '${data.duration || ''}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-danger" onclick="deletePackage('${doc.id}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                if(html === "") html = `<tr><td colspan="4" style="text-align:center;">لا توجد باقات حالياً</td></tr>`;
+                document.getElementById('packagesTableBody').innerHTML = html;
+                
+                // Refresh users table to update dropdowns
+                loadUsers();
+            });
+        }
+
+        function addPackage() {
+            const name = document.getElementById('newPkgName').value;
+            const price = document.getElementById('newPkgPrice').value;
+            const duration = parseInt(document.getElementById('newPkgDuration').value) || 0;
+            if(!name) return alert("أدخل اسم الباقة");
+            if(duration <= 0) return alert("يرجى إدخال مدة صحيحة بالأيام");
+            db.collection("packages").add({ name, price, duration });
+            document.getElementById('newPkgName').value = "";
+            document.getElementById('newPkgPrice').value = "";
+            document.getElementById('newPkgDuration').value = "";
+        }
+
+        function editPackage(id, oldName, oldPrice, oldDuration) {
+            document.getElementById('editPkgId').value = id;
+            document.getElementById('editPkgName').value = oldName;
+            document.getElementById('editPkgPrice').value = oldPrice;
+            document.getElementById('editPkgDuration').value = oldDuration;
+            document.getElementById('editPackageModal').style.display = 'flex';
+        }
+
+        function saveEditedPackage() {
+            const id = document.getElementById('editPkgId').value;
+            const newName = document.getElementById('editPkgName').value;
+            const newPrice = document.getElementById('editPkgPrice').value;
+            const newDuration = parseInt(document.getElementById('editPkgDuration').value) || 0;
+            
+            if(!newName) return alert("الاسم مطلوب");
+            if(newDuration <= 0) return alert("يرجى إدخال مدة صحيحة بالأيام");
+            
+            db.collection("packages").doc(id).update({
+                name: newName,
+                price: newPrice,
+                duration: newDuration
+            }).then(() => {
+                document.getElementById('editPackageModal').style.display = 'none';
+            });
+        }
+
+        function deletePackage(id) {
+            if(confirm("هل أنت متأكد من حذف هذه الباقة؟")) {
+                db.collection("packages").doc(id).delete();
+            }
+        }
+
+        // Users Logic
+        let globalUsers = [];
+
+        function loadUsers() {
+            db.collection("users").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+                globalUsers = [];
+                snapshot.forEach(doc => {
+                    globalUsers.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Update package filter dropdown
+                let filterPkgHtml = `<option value="all">جميع الباقات</option><option value="none">بدون باقة</option>`;
+                globalPackages.forEach(p => {
+                    filterPkgHtml += `<option value="${p.name}">${p.name}</option>`;
+                });
+                document.getElementById('filterPackage').innerHTML = filterPkgHtml;
+                
+                renderUsers();
+            });
+        }
+
+        function renderUsers() {
+            const searchEmail = document.getElementById('filterEmail').value.toLowerCase();
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterPackage = document.getElementById('filterPackage').value;
+
+            let html = "";
+            globalUsers.forEach(data => {
+                // Apply Filters
+                if (searchEmail && !data.email.toLowerCase().includes(searchEmail)) return;
+                if (filterStatus !== 'all' && data.status !== filterStatus) return;
+                
+                let userPkg = data.package || 'none';
+                if (filterPackage !== 'all' && filterPackage !== userPkg) return;
+
+                // Generate Packages Dropdown
+                    let pkgOptions = `<option value="">بدون باقة</option>`;
+                    globalPackages.forEach(p => {
+                        let selected = (data.package === p.name) ? "selected" : "";
+                        pkgOptions += `<option value="${p.name}" ${selected}>${p.name}</option>`;
+                    });
+
+                    let statusBadge = data.status === 'active' 
+                        ? `<span class="badge badge-active">مفعل</span>` 
+                        : `<span class="badge badge-trial">فترة تجريبية</span>`;
+
+                    let dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('ar-EG') : 'غير معروف';
+                    let expiryStr = data.expiresAt ? data.expiresAt.toDate().toLocaleDateString('ar-EG') : '-';
+                    if (data.status === 'active') {
+                        statusBadge += `<div style="font-size:11px; margin-top:4px; color:var(--text-sub);">ينتهي: ${expiryStr}</div>`;
+                    }
+
+                    html += `
+                        <tr>
+                            <td>${data.email}</td>
+                            <td>${dateStr}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <select id="pkgSelect_${data.id}" onchange="updateUserPackage('${data.id}', this.value)" style="width: 150px;">
+                                    ${pkgOptions}
+                                </select>
+                            </td>
+                            <td>
+                                ${data.status === 'trial' ? 
+                                    `<button class="btn-success" onclick="activateUser('${data.id}')">تفعيل الحساب</button>` : 
+                                    `<button class="btn-danger" onclick="updateUserStatus('${data.id}', 'trial')">إلغاء التفعيل</button>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                });
+                if(html === "") html = `<tr><td colspan="5" style="text-align:center;">لا يوجد نتائج مطابقة للبحث</td></tr>`;
+                document.getElementById('usersTableBody').innerHTML = html;
+            }
+
+        function activateUser(userId) {
+            const pkgSelect = document.getElementById(`pkgSelect_${userId}`);
+            const pkgName = pkgSelect.value;
+            if(!pkgName) return alert("يجب اختيار باقة للعميل قبل التفعيل!");
+            
+            const pkgData = globalPackages.find(p => p.name === pkgName);
+            const durationDays = pkgData ? (pkgData.duration || 30) : 30; // Default 30 if not found
+            
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + durationDays);
+            
+            db.collection("users").doc(userId).update({ 
+                status: 'active',
+                package: pkgName,
+                expiresAt: firebase.firestore.Timestamp.fromDate(expiresAt)
+            });
+        }
+
+        function updateUserStatus(userId, newStatus) {
+            db.collection("users").doc(userId).update({ status: newStatus });
+        }
+
+        function updateUserPackage(userId, pkgName) {
+            db.collection("users").doc(userId).update({ package: pkgName });
+        }
+    </script>
+</body>
+</html>
