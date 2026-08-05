@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Downloader Pro - Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -65,6 +66,20 @@
 
         /* Package Form */
         .flex-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+
+        /* Responsive Design */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto; min-height: 100vh; overflow-y: auto; }
+            .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; padding: 10px; border-left: none; border-bottom: 1px solid var(--border); align-items: center; justify-content: space-around; }
+            .brand { width: 100%; border-bottom: none; padding-bottom: 10px; margin-bottom: 0; }
+            .nav-item { padding: 10px; border-right: none; border-bottom: 4px solid transparent; }
+            .nav-item.active { border-right: none; border-bottom: 4px solid var(--accent-blue); background: none; }
+            .content { overflow-y: visible; padding: 15px; }
+            .flex-row { flex-direction: column; align-items: stretch; }
+            .auth-box { width: 90%; }
+            #editPackageModal .auth-box { width: 90%; }
+        }
     </style>
 </head>
 <body>
@@ -128,20 +143,22 @@
                 </div>
             </div>
             <div class="card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>البريد الإلكتروني</th>
-                            <th>تاريخ الانضمام</th>
-                            <th>الحالة</th>
-                            <th>الباقة الحالية</th>
-                            <th>إجراءات التحكم</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <tr><td colspan="5" style="text-align:center;">جاري تحميل البيانات...</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>البريد الإلكتروني</th>
+                                <th>تاريخ الانضمام</th>
+                                <th>الحالة</th>
+                                <th>الباقة الحالية</th>
+                                <th>إجراءات التحكم</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="5" style="text-align:center;">جاري تحميل البيانات...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -157,19 +174,21 @@
                 </div>
             </div>
             <div class="card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>اسم الباقة</th>
-                            <th>السعر</th>
-                            <th>المدة (أيام)</th>
-                            <th>إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="packagesTableBody">
-                        <tr><td colspan="4" style="text-align:center;">جاري تحميل الباقات...</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>اسم الباقة</th>
+                                <th>السعر</th>
+                                <th>المدة (أيام)</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="packagesTableBody">
+                            <tr><td colspan="4" style="text-align:center;">جاري تحميل الباقات...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
