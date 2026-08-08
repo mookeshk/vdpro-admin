@@ -119,6 +119,7 @@
         </div>
         <div class="nav-item active" onclick="switchPage('usersPage', this)"><i class="fas fa-users"></i> إدارة العملاء</div>
         <div class="nav-item" onclick="switchPage('packagesPage', this)"><i class="fas fa-box"></i> إدارة الباقات</div>
+        <div class="nav-item" onclick="switchPage('updatesPage', this)"><i class="fas fa-sync-alt"></i> إدارة التحديثات</div>
         <div style="flex:1;"></div>
         <div class="nav-item" style="color:var(--accent-red);" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</div>
     </div>
@@ -192,6 +193,27 @@
             </div>
         </div>
 
+        <!-- Updates Page -->
+        <div id="updatesPage" class="page">
+            <h1>إدارة تحديثات البرنامج</h1>
+            <div class="card" style="max-width: 600px; margin-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: var(--text-sub);">الإصدار الجديد (مثال: 3.0.0)</label>
+                    <input type="text" id="updateVersion" placeholder="3.0.0" style="width: 100%;" />
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: var(--text-sub);">رابط التحميل (مثال: رابط جوجل درايف)</label>
+                    <input type="text" id="updateUrl" placeholder="https://..." style="width: 100%;" />
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: var(--text-sub);">ما الجديد في هذا التحديث؟</label>
+                    <textarea id="updateChangelog" rows="5" placeholder="- إضافة ميزات جديدة..." style="width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-family: inherit;"></textarea>
+                </div>
+                <button class="btn-primary" onclick="saveUpdateInfo()" style="width: 100%; font-size: 16px;"><i class="fas fa-upload"></i> نشر التحديث للمستخدمين</button>
+                <div id="updateMsg" style="margin-top: 15px; text-align: center; color: var(--accent-green); font-weight: bold; display: none;">تم نشر التحديث بنجاح!</div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Firebase SDKs -->
@@ -242,11 +264,53 @@
         function logout() { auth.signOut(); }
 
         // Navigation
-        function switchPage(pageId, el) {
+        function switchPage(pageId, element) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
+            document.getElementById(pageId).classList.add('active');
+            element.classList.add('active');
+            
+            if(pageId === 'usersPage') loadUsers();
+            if(pageId === 'packagesPage') loadPackages();
+            if(pageId === 'updatesPage') loadUpdateInfo();
+        }
+
+        // =======================
+        // Updates Management
+        // =======================
+        function loadUpdateInfo() {
+            db.collection("app_update").doc("latest").get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('updateVersion').value = data.latest_version || '';
+                    document.getElementById('updateUrl').value = data.download_url || '';
+                    document.getElementById('updateChangelog').value = data.changelog || '';
+                }
+            }).catch(console.error);
+        }
+
+        function saveUpdateInfo() {
+            const version = document.getElementById('updateVersion').value.trim();
+            const url = document.getElementById('updateUrl').value.trim();
+            const changelog = document.getElementById('updateChangelog').value.trim();
+
+            if(!version || !url) {
+                alert("يرجى إدخال رقم الإصدار ورابط التحميل على الأقل.");
+                return;
+            }
+
+            db.collection("app_update").doc("latest").set({
+                latest_version: version,
+                download_url: url,
+                changelog: changelog,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(() => {
+                const msg = document.getElementById('updateMsg');
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 3000);
+            }).catch((error) => {
+                alert("خطأ أثناء النشر: " + error.message);
+            });
         }
 
         // Packages Logic
