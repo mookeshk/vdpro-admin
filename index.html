@@ -152,11 +152,12 @@
                                 <th>تاريخ الانضمام</th>
                                 <th>الحالة</th>
                                 <th>الباقة الحالية</th>
+                                <th>الأجهزة</th>
                                 <th>إجراءات التحكم</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
-                            <tr><td colspan="5" style="text-align:center;">جاري تحميل البيانات...</td></tr>
+                            <tr><td colspan="6" style="text-align:center;">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -214,6 +215,32 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Manage Devices Modal -->
+    <div id="manageDevicesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+        <div class="card" style="width: 500px; max-width: 90%; background: var(--bg-main);">
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-desktop"></i> إدارة الأجهزة للمستخدم</h2>
+            <input type="hidden" id="manageDevicesUserId" />
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">الحد الأقصى للأجهزة المسموح بها:</label>
+                <div class="flex-row">
+                    <input type="number" id="manageMaxDevices" min="1" style="flex:1;" />
+                    <button class="btn-success" onclick="saveMaxDevices()">حفظ التعديل</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 10px;"><strong>الأجهزة المسجلة حالياً:</strong></div>
+            <div id="devicesList" style="background: var(--bg-card); padding: 10px; border-radius: 8px; min-height: 50px; margin-bottom: 20px;">
+                <!-- Devices injected here -->
+            </div>
+
+            <div class="flex-row">
+                <button class="btn-danger" style="flex:1;" onclick="clearAllDevices()"><i class="fas fa-trash"></i> تصفير كل الأجهزة</button>
+                <button class="btn-primary" style="flex:1;" onclick="document.getElementById('manageDevicesModal').style.display='none'">إغلاق</button>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDKs -->
@@ -437,6 +464,10 @@
                         statusBadge += `<div style="font-size:11px; margin-top:4px; color:var(--text-sub);">ينتهي: ${expiryStr}</div>`;
                     }
 
+                    let userDevicesCount = data.devices ? data.devices.length : 0;
+                    let maxDevices = data.max_devices || 1;
+                    let devicesHtml = `<button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick='openDevicesModal("${data.id}")'><i class="fas fa-desktop"></i> ${userDevicesCount} / ${maxDevices}</button>`;
+
                     html += `
                         <tr>
                             <td>${data.email}</td>
@@ -447,6 +478,7 @@
                                     ${pkgOptions}
                                 </select>
                             </td>
+                            <td>${devicesHtml}</td>
                             <td>
                                 ${data.status === 'trial' ? 
                                     `<button class="btn-success" onclick="activateUser('${data.id}')">تفعيل الحساب</button>` : 
@@ -456,9 +488,67 @@
                         </tr>
                     `;
                 });
-                if(html === "") html = `<tr><td colspan="5" style="text-align:center;">لا يوجد نتائج مطابقة للبحث</td></tr>`;
+                if(html === "") html = `<tr><td colspan="6" style="text-align:center;">لا يوجد نتائج مطابقة للبحث</td></tr>`;
                 document.getElementById('usersTableBody').innerHTML = html;
             }
+
+        // =======================
+        // Manage Devices Logic
+        // =======================
+        function openDevicesModal(userId) {
+            const user = globalUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('manageDevicesUserId').value = userId;
+            document.getElementById('manageMaxDevices').value = user.max_devices || 1;
+            
+            let devicesListHtml = "";
+            if (user.devices && user.devices.length > 0) {
+                user.devices.forEach((devId, index) => {
+                    devicesListHtml += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; background:var(--bg-elevated); border-radius:5px;">
+                            <span style="font-family:monospace; font-size:12px; color:var(--text-sub); word-break:break-all;">جهاز ${index + 1}: ${devId}</span>
+                            <button class="btn-danger" style="padding:4px 8px; font-size:12px;" onclick="removeSingleDevice('${userId}', '${devId}')"><i class="fas fa-times"></i> فك</button>
+                        </div>
+                    `;
+                });
+            } else {
+                devicesListHtml = `<div style="text-align:center; color:var(--text-sub);">لا توجد أجهزة مسجلة لهذا الحساب.</div>`;
+            }
+            
+            document.getElementById('devicesList').innerHTML = devicesListHtml;
+            document.getElementById('manageDevicesModal').style.display = 'flex';
+        }
+
+        function saveMaxDevices() {
+            const userId = document.getElementById('manageDevicesUserId').value;
+            const newMax = parseInt(document.getElementById('manageMaxDevices').value) || 1;
+            db.collection("users").doc(userId).update({ max_devices: newMax })
+              .then(() => alert("تم تحديث الحد الأقصى للأجهزة بنجاح"))
+              .catch(e => alert("خطأ: " + e.message));
+        }
+
+        function clearAllDevices() {
+            if(confirm("هل أنت متأكد من مسح جميع الأجهزة المسجلة لهذا الحساب؟")) {
+                const userId = document.getElementById('manageDevicesUserId').value;
+                db.collection("users").doc(userId).update({ devices: [] })
+                  .then(() => {
+                      alert("تم تصفير الأجهزة بنجاح.");
+                      document.getElementById('manageDevicesModal').style.display = 'none';
+                  })
+                  .catch(e => alert("خطأ: " + e.message));
+            }
+        }
+
+        function removeSingleDevice(userId, devId) {
+            if(confirm("هل أنت متأكد من فك ارتباط هذا الجهاز فقط؟")) {
+                db.collection("users").doc(userId).update({
+                    devices: firebase.firestore.FieldValue.arrayRemove(devId)
+                }).then(() => {
+                    document.getElementById('manageDevicesModal').style.display = 'none';
+                }).catch(e => alert("خطأ: " + e.message));
+            }
+        }
 
         function activateUser(userId) {
             const pkgSelect = document.getElementById(`pkgSelect_${userId}`);
