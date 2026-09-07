@@ -129,7 +129,40 @@
         
         <!-- Users Page -->
         <div id="usersPage" class="page active">
-            <h1>إدارة العملاء</h1>
+            <h1>إدارة العملاء والإحصائيات</h1>
+            
+            <!-- Overall Stats Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <div class="card" style="display:flex; align-items:center; gap:15px;">
+                    <div style="font-size:30px; color:var(--accent-blue);"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-sub);">إجمالي العملاء</div>
+                        <div id="summaryTotalUsers" style="font-size:20px; font-weight:bold;">0</div>
+                    </div>
+                </div>
+                <div class="card" style="display:flex; align-items:center; gap:15px;">
+                    <div style="font-size:30px; color:var(--accent-green);"><i class="fas fa-user-check"></i></div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-sub);">الاشتراكات النشطة</div>
+                        <div id="summaryActiveUsers" style="font-size:20px; font-weight:bold;">0</div>
+                    </div>
+                </div>
+                <div class="card" style="display:flex; align-items:center; gap:15px;">
+                    <div style="font-size:30px; color:var(--accent-orange);"><i class="fas fa-download"></i></div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-sub);">إجمالي التحميلات</div>
+                        <div id="summaryTotalDownloads" style="font-size:20px; font-weight:bold;">0 فيديو</div>
+                    </div>
+                </div>
+                <div class="card" style="display:flex; align-items:center; gap:15px;">
+                    <div style="font-size:30px; color:#a855f7;"><i class="fas fa-hdd"></i></div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-sub);">إجمالي السعة المحملة</div>
+                        <div id="summaryTotalSize" style="font-size:20px; font-weight:bold;">0 MB</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card" style="margin-bottom: 20px;">
                 <div class="flex-row">
                     <input type="text" id="filterEmail" placeholder="بحث بالإيميل..." onkeyup="renderUsers()" style="flex:2;" />
@@ -150,6 +183,7 @@
                             <tr>
                                 <th>البريد الإلكتروني</th>
                                 <th>تاريخ الانضمام</th>
+                                <th>إحصائيات التحميل</th>
                                 <th>الحالة</th>
                                 <th>الباقة الحالية</th>
                                 <th>الأجهزة</th>
@@ -157,7 +191,7 @@
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
-                            <tr><td colspan="6" style="text-align:center;">جاري تحميل البيانات...</td></tr>
+                            <tr><td colspan="7" style="text-align:center;">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -416,10 +450,17 @@
         let globalUsers = [];
 
         function loadUsers() {
-            db.collection("users").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+            db.collection("users").onSnapshot(snapshot => {
                 globalUsers = [];
                 snapshot.forEach(doc => {
                     globalUsers.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Sort client-side
+                globalUsers.sort((a, b) => {
+                    let tA = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate() : 0;
+                    let tB = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate() : 0;
+                    return tB - tA;
                 });
                 
                 // Update package filter dropdown
@@ -438,6 +479,26 @@
             const filterStatus = document.getElementById('filterStatus').value;
             const filterPackage = document.getElementById('filterPackage').value;
 
+            let totalUsers = globalUsers.length;
+            let activeUsers = 0;
+            let totalDownloadsAll = 0;
+            let totalDownloadedMBAll = 0;
+
+            globalUsers.forEach(u => {
+                if (u.status === 'active') activeUsers++;
+                if (u.totalDownloads) totalDownloadsAll += u.totalDownloads;
+                if (u.totalDownloadedMB) totalDownloadedMBAll += u.totalDownloadedMB;
+            });
+
+            document.getElementById('summaryTotalUsers').textContent = totalUsers;
+            document.getElementById('summaryActiveUsers').textContent = activeUsers;
+            document.getElementById('summaryTotalDownloads').textContent = totalDownloadsAll.toLocaleString('ar-EG') + ' فيديو';
+            
+            let formattedTotalSize = totalDownloadedMBAll > 1024 
+                ? (totalDownloadedMBAll / 1024).toFixed(2) + ' GB' 
+                : totalDownloadedMBAll.toFixed(1) + ' MB';
+            document.getElementById('summaryTotalSize').textContent = formattedTotalSize;
+
             let html = "";
             globalUsers.forEach(data => {
                 // Apply Filters
@@ -448,49 +509,55 @@
                 if (filterPackage !== 'all' && filterPackage !== userPkg) return;
 
                 // Generate Packages Dropdown
-                    let pkgOptions = `<option value="">بدون باقة</option>`;
-                    globalPackages.forEach(p => {
-                        let selected = (data.package === p.name) ? "selected" : "";
-                        pkgOptions += `<option value="${p.name}" ${selected}>${p.name}</option>`;
-                    });
-
-                    let statusBadge = data.status === 'active' 
-                        ? `<span class="badge badge-active">مفعل</span>` 
-                        : `<span class="badge badge-trial">فترة تجريبية</span>`;
-
-                    let dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('ar-EG') : 'غير معروف';
-                    let expiryStr = data.expiresAt ? data.expiresAt.toDate().toLocaleDateString('ar-EG') : '-';
-                    if (data.status === 'active') {
-                        statusBadge += `<div style="font-size:11px; margin-top:4px; color:var(--text-sub);">ينتهي: ${expiryStr}</div>`;
-                    }
-
-                    let userDevicesCount = data.devices ? data.devices.length : 0;
-                    let maxDevices = data.max_devices || 1;
-                    let devicesHtml = `<button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick='openDevicesModal("${data.id}")'><i class="fas fa-desktop"></i> ${userDevicesCount} / ${maxDevices}</button>`;
-
-                    html += `
-                        <tr>
-                            <td>${data.email}</td>
-                            <td>${dateStr}</td>
-                            <td>${statusBadge}</td>
-                            <td>
-                                <select id="pkgSelect_${data.id}" onchange="updateUserPackage('${data.id}', this.value)" style="width: 150px;">
-                                    ${pkgOptions}
-                                </select>
-                            </td>
-                            <td>${devicesHtml}</td>
-                            <td>
-                                ${data.status === 'trial' ? 
-                                    `<button class="btn-success" onclick="activateUser('${data.id}')">تفعيل الحساب</button>` : 
-                                    `<button class="btn-danger" onclick="updateUserStatus('${data.id}', 'trial')">إلغاء التفعيل</button>`
-                                }
-                            </td>
-                        </tr>
-                    `;
+                let pkgOptions = `<option value="">بدون باقة</option>`;
+                globalPackages.forEach(p => {
+                    let selected = (data.package === p.name) ? "selected" : "";
+                    pkgOptions += `<option value="${p.name}" ${selected}>${p.name}</option>`;
                 });
-                if(html === "") html = `<tr><td colspan="6" style="text-align:center;">لا يوجد نتائج مطابقة للبحث</td></tr>`;
-                document.getElementById('usersTableBody').innerHTML = html;
-            }
+
+                let statusBadge = data.status === 'active' 
+                    ? `<span class="badge badge-active">مفعل</span>` 
+                    : `<span class="badge badge-trial">فترة تجريبية</span>`;
+
+                let dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('ar-EG') : 'غير معروف';
+                let expiryStr = data.expiresAt ? data.expiresAt.toDate().toLocaleDateString('ar-EG') : '-';
+                if (data.status === 'active') {
+                    statusBadge += `<div style="font-size:11px; margin-top:4px; color:var(--text-sub);">ينتهي: ${expiryStr}</div>`;
+                }
+
+                let dlCount = data.totalDownloads || 0;
+                let dlMB = data.totalDownloadedMB || 0;
+                let dlSizeStr = dlMB > 1024 ? (dlMB / 1024).toFixed(1) + ' GB' : dlMB.toFixed(0) + ' MB';
+                let downloadsStatsHtml = `<div><strong>${dlCount}</strong> فيديو</div><div style="font-size:11px; color:var(--text-sub);">${dlSizeStr}</div>`;
+
+                let userDevicesCount = data.devices ? data.devices.length : 0;
+                let maxDevices = data.max_devices || 1;
+                let devicesHtml = `<button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick='openDevicesModal("${data.id}")'><i class="fas fa-desktop"></i> ${userDevicesCount} / ${maxDevices}</button>`;
+
+                html += `
+                    <tr>
+                        <td>${data.email}</td>
+                        <td>${dateStr}</td>
+                        <td>${downloadsStatsHtml}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <select id="pkgSelect_${data.id}" onchange="updateUserPackage('${data.id}', this.value)" style="width: 150px;">
+                                ${pkgOptions}
+                            </select>
+                        </td>
+                        <td>${devicesHtml}</td>
+                        <td>
+                            ${data.status === 'trial' ? 
+                                `<button class="btn-success" onclick="activateUser('${data.id}')">تفعيل الحساب</button>` : 
+                                `<button class="btn-danger" onclick="updateUserStatus('${data.id}', 'trial')">إلغاء التفعيل</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+            if(html === "") html = `<tr><td colspan="7" style="text-align:center;">لا يوجد نتائج مطابقة للبحث</td></tr>`;
+            document.getElementById('usersTableBody').innerHTML = html;
+        }
 
         // =======================
         // Manage Devices Logic
