@@ -252,6 +252,19 @@
     </div>
 
     <!-- Manage Devices Modal -->
+ <div id="historyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+        <div class="card" style="width: 640px; max-width: 92%; max-height: 90vh; display:flex; flex-direction:column; background: var(--bg-main);">
+            <h2 style="margin-bottom: 6px;"><i class="fas fa-history"></i> سجل التحميلات</h2>
+            <div style="margin-bottom: 14px; color: var(--text-sub); font-size: 13px;"><span id="historyUserEmail"></span> — <span id="historyCount">0</span> تحميل</div>
+            <input type="hidden" id="historyUserId" />
+            <div id="historyList" style="background: var(--bg-card); padding: 10px; border-radius: 8px; min-height: 60px; margin-bottom: 16px; overflow-y:auto; flex:1;"></div>
+            <div class="flex-row">
+                <button class="btn-danger" style="flex:1;" onclick="clearUserHistory()"><i class="fas fa-trash"></i> مسح السجل كله</button>
+                <button class="btn-primary" style="flex:1;" onclick="document.getElementById('historyModal').style.display='none'">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
     <div id="manageDevicesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
         <div class="card" style="width: 500px; max-width: 90%; background: var(--bg-main);">
             <h2 style="margin-bottom: 20px;"><i class="fas fa-desktop"></i> إدارة الأجهزة للمستخدم</h2>
@@ -536,7 +549,7 @@
 
                 html += `
                     <tr>
-                        <td>${data.email}</td>
+                        <td>${escapeHtml(data.email)}</td>
                         <td>${dateStr}</td>
                         <td>${downloadsStatsHtml}</td>
                         <td>${statusBadge}</td>
@@ -546,7 +559,9 @@
                             </select>
                         </td>
                         <td>${devicesHtml}</td>
-                        <td>
+                        <td style="white-space:nowrap;">
+                            <button class="btn-primary" style="padding:4px 8px; font-size:12px;" title="سجل التحميلات" onclick='openHistoryModal("${data.id}")'><i class="fas fa-history"></i></button>
+                            <button class="btn-primary" style="padding:4px 8px; font-size:12px;" title="إرسال رابط إعادة تعيين كلمة المرور" onclick='resetUserPassword("${data.id}")'><i class="fas fa-key"></i></button>
                             ${data.status === 'trial' ? 
                                 `<button class="btn-success" onclick="activateUser('${data.id}')">تفعيل الحساب</button>` : 
                                 `<button class="btn-danger" onclick="updateUserStatus('${data.id}', 'trial')">إلغاء التفعيل</button>`
@@ -615,6 +630,84 @@
                     document.getElementById('manageDevicesModal').style.display = 'none';
                 }).catch(e => alert("خطأ: " + e.message));
             }
+        }
+
+        function escapeHtml(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        // =======================
+        // Reset Password
+        // =======================
+        function resetUserPassword(userId) {
+            const user = globalUsers.find(u => u.id === userId);
+            if (!user || !user.email) return alert("المستخدم ده مالوش بريد مسجل");
+            if (!confirm("إرسال رابط إعادة تعيين كلمة المرور إلى:\n" + user.email + " ؟")) return;
+            auth.sendPasswordResetEmail(user.email)
+                .then(() => alert("تم إرسال الرابط إلى " + user.email))
+                .catch(e => alert("خطأ: " + e.message));
+        }
+
+        // =======================
+        // Download History
+        // =======================
+        function openHistoryModal(userId) {
+            const user = globalUsers.find(u => u.id === userId);
+            document.getElementById('historyUserId').value = userId;
+            document.getElementById('historyUserEmail').textContent = user ? user.email : '';
+            document.getElementById('historyModal').style.display = 'flex';
+            loadUserHistory();
+        }
+
+        function loadUserHistory() {
+            const userId = document.getElementById('historyUserId').value;
+            const list = document.getElementById('historyList');
+            list.innerHTML = `<div style="text-align:center; color:var(--text-sub);">جاري التحميل...</div>`;
+            db.collection("users").doc(userId).collection("downloads").orderBy("completedAt", "desc").limit(300).get()
+              .then(snap => {
+                  document.getElementById('historyCount').textContent = snap.size;
+                  if (snap.empty) { list.innerHTML = `<div style="text-align:center; color:var(--text-sub);">لا يوجد تحميلات مسجلة لهذا المستخدم.</div>`; return; }
+                  let html = "";
+                  snap.forEach(doc => {
+                      const d = doc.data();
+                      const when = d.completedAt && d.completedAt.toDate ? d.completedAt.toDate().toLocaleString('ar-EG') : '';
+                      const size = d.sizeMB ? (d.sizeMB > 1024 ? (d.sizeMB / 1024).toFixed(1) + ' GB' : d.sizeMB.toFixed(0) + ' MB') : '';
+                      const safeUrl = /^https?:\/\//i.test(d.url || '') ? escapeHtml(d.url) : '#';
+                      html += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; padding:8px; background:var(--bg-elevated); border-radius:5px;">
+                            <div style="min-width:0; flex:1;">
+                                <div style="font-size:13px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(d.title || '')}</div>
+                                <a href="${safeUrl}" target="_blank" rel="noopener" style="font-size:12px; color:var(--accent-blue); direction:ltr; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(d.url)}</a>
+                                <div style="font-size:11px; color:var(--text-sub);">${escapeHtml(when)}${size ? ' — ' + size : ''}</div>
+                            </div>
+                            <button class="btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deleteHistoryItem('${doc.id}')"><i class="fas fa-trash"></i></button>
+                        </div>`;
+                  });
+                  list.innerHTML = html;
+              })
+              .catch(e => { list.innerHTML = `<div style="text-align:center; color:var(--accent-red);">خطأ: ${escapeHtml(e.message)}</div>`; });
+        }
+
+        function deleteHistoryItem(docId) {
+            const userId = document.getElementById('historyUserId').value;
+            db.collection("users").doc(userId).collection("downloads").doc(docId).delete()
+              .then(loadUserHistory)
+              .catch(e => alert("خطأ: " + e.message));
+        }
+
+        async function clearUserHistory() {
+            const userId = document.getElementById('historyUserId').value;
+            if (!confirm("مسح سجل التحميلات بالكامل لهذا المستخدم؟")) return;
+            const ref = db.collection("users").doc(userId).collection("downloads");
+            let snap;
+            do {
+                snap = await ref.limit(400).get();
+                if (snap.empty) break;
+                const batch = db.batch();
+                snap.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+            } while (snap.size === 400);
+            loadUserHistory();
         }
 
         function activateUser(userId) {
