@@ -2,9 +2,17 @@ const TelegramBot = require('node-telegram-bot-api').default || require('node-te
 const firebase = require('firebase/app');
 require('firebase/firestore');
 
-const token = '8612903746:AAHADntLn3aIBbO6cha27i1z78M5sm30iDM';
+// الأسرار بتتقري من متغيرات البيئة (Render > Environment)، مش من الكود
+const token = process.env.BOT_TOKEN;
+const adminChatId = process.env.ADMIN_CHAT_ID;
+const paymentNumber = process.env.PAYMENT_NUMBER;
+
+if (!token || !adminChatId || !paymentNumber) {
+    console.error("Missing env vars: BOT_TOKEN, ADMIN_CHAT_ID, PAYMENT_NUMBER");
+    process.exit(1);
+}
+
 const bot = new TelegramBot(token, {polling: true});
-const adminChatId = 1840941469;
 
 const firebaseConfig = {
     apiKey: "AIzaSyBeLAM_PeieqjvwVdqbp3rh3lzS8Oz5JxM",
@@ -98,7 +106,7 @@ bot.on('message', (msg) => {
         state.phone = msg.text;
         state.step = 'ASK_RECEIPT';
         let txt = `أخيراً، قم بتحويل مبلغ الاشتراك (${state.price}) إلى حساب فودافون كاش أو إنستاباي على الرقم:\n`;
-        txt += `📞 01020144994\n\n`;
+        txt += `📞 ${paymentNumber}\n\n`;
         txt += `ثم قم بتصوير إيصال التحويل وأرسل صورة التحويل هنا في المحادثة لتأكيد طلبك.`;
         bot.sendMessage(chatId, txt);
     }
