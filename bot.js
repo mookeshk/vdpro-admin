@@ -12,7 +12,14 @@ if (!token || !adminChatId || !paymentNumber) {
     process.exit(1);
 }
 
-const bot = new TelegramBot(token, {polling: true});
+// على Render بنستخدم Webhook: تيليجرام بيبعت الرسالة للسيرفر فيصحّيه لو كان نايم.
+// محلياً (من غير RENDER_EXTERNAL_URL) بنرجع لـ polling عشان التجربة.
+const publicUrl = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || "";
+const useWebhook = publicUrl.startsWith("https://");
+const webhookSecret = process.env.WEBHOOK_SECRET || require('crypto').createHash('sha256').update(token).digest('hex').slice(0, 32);
+const webhookPath = "/telegram/" + webhookSecret;
+
+const bot = useWebhook ? new TelegramBot(token) : new TelegramBot(token, { polling: true });
 
 const firebaseConfig = {
     apiKey: "AIzaSyBeLAM_PeieqjvwVdqbp3rh3lzS8Oz5JxM",
@@ -137,10 +144,45 @@ bot.on('message', (msg) => {
 console.log("Telegram Bot Wizard is running...");
 
 
-// Render Free Tier HTTP Server Binding
+// HTTP server: health check + Telegram webhook
 const http = require('http');
 const server = http.createServer((req, res) => {
-  res.writeHead(200);
-  res.end('Bot is running!');
+    const path = (req.url || "").split("?")[0];
+
+    if (useWebhook && req.method === 'POST' && path === webhookPath) {
+        if (req.headers['x-telegram-bot-api-secret-token'] !== webhookSecret) {
+            res.writeHead(401); res.end(); return;
+        }
+        let body = '';
+        req.on('data', chunk => { body += chunk; if (body.length > 1e6) req.destroy(); });
+        req.on('end', () => {
+            res.writeHead(200); res.end('OK');   // نرد فوراً عشان تيليجرام مايعيدش الإرسال
+            try { bot.processUpdate(JSON.parse(body)); }
+            catch (e) { console.error("Bad update:", e.message); }
+        });
+        return;
+    }
+
+    res.writeHead(200);
+    res.end('Bot is running!');
 });
-server.listen(process.env.PORT || 3000);
+
+server.listen(process.env.PORT || 3000, async () => {
+    console.log("HTTP server listening on", process.env.PORT || 3000);
+    if (useWebhook) {
+        try {
+            await bot.setWebhook(publicUrl + webhookPath, { secret_token: webhookSecret });
+            console.log("Webhook set:", publicUrl + "/telegram/***");
+        } catch (e) {
+            console.error("Failed to set webhook:", e.message);
+        }
+    } else {
+        console.log("Polling mode (no RENDER_EXTERNAL_URL)");
+    }
+});
+
+bot.on('error', e => console.error("Bot error:", e.message));
+// أي رسالة تفشل (مثلاً مستخدم عامل بلوك للبوت) ماتوقعش البوت كله
+process.on('unhandledRejection', e => console.error("Unhandled:", e && e.message ? e.message : e));
+process.on('uncaughtException', e => console.error("Uncaught:", e && e.message ? e.message : e));
+bot.on('polling_error', e => console.error("Polling error:", e.message));
