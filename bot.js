@@ -287,6 +287,13 @@ bot.on('message', async (msg) => {
     if (msg.text && msg.text.startsWith('/')) return;
     if (!db) return send(chatId, MAINTENANCE);
 
+    // كود ربط اتبعت كرسالة عادية (من غير /start): نربط ونلغي أي طلب شراء مفتوح
+    const linkMatch = (msg.text || '').trim().match(/^link_([A-Za-z0-9]{20,40})$/);
+    if (linkMatch) {
+        await clearSession(chatId);
+        return linkAccount(msg, linkMatch[1]).catch(e => { console.error("link failed:", e); send(chatId, "حدث خطأ، جرّب تاني."); });
+    }
+
     let s;
     try { s = await getSession(chatId); } catch { s = null; }
     if (!s) {
@@ -327,6 +334,12 @@ bot.on('message', async (msg) => {
         }
         if (s.step === 'ASK_COUPON') {
             const r = await checkCoupon(text, s.packageId);
+            if (!r.ok && /^[A-Z0-9]{6,10}$/i.test(text)) {
+                const ref = await db.collection('users').where('referralCode', '==', text.toUpperCase()).limit(1).get();
+                if (!ref.empty) return send(chatId, "ℹ️ ده كود دعوة مش كود خصم. كود الدعوة بيتكتب وقت إنشاء الحساب في البرنامج، وصاحبه بياخد أيام مجانية لما تشترك.\nلو معاكش كود خصم دوس \"معنديش كود\".", {
+                    reply_markup: { inline_keyboard: [[{ text: "معنديش كود", callback_data: "NOCOUPON" }]] }
+                });
+            }
             if (!r.ok) return send(chatId, `❌ ${r.msg}. جرّب كود تاني أو دوس "معنديش كود".`, {
                 reply_markup: { inline_keyboard: [[{ text: "معنديش كود", callback_data: "NOCOUPON" }]] }
             });
