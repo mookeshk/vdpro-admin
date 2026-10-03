@@ -23,14 +23,15 @@
         body { margin: 0; padding: 0; background: var(--bg-main); color: var(--text-main); font-family: var(--font-family); display: flex; height: 100vh; overflow: hidden; }
 
         /* Sidebar */
-        .sidebar { width: 250px; background: var(--bg-card); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; }
+        .sidebar { width: 250px; background: var(--bg-card); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; flex-shrink: 0; }
         .brand { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
         .brand h2 { margin: 0; font-size: 18px; color: var(--accent-blue); }
         .brand span { font-size: 12px; color: var(--text-sub); }
-        
-        .nav-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--text-sub); transition: 0.2s; font-weight: bold; }
+
+        .nav-item { padding: 14px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--text-sub); transition: 0.2s; font-weight: bold; }
         .nav-item:hover, .nav-item.active { background: var(--bg-elevated); color: var(--text-main); border-right: 4px solid var(--accent-blue); }
-        
+        .nav-count { margin-right: auto; background: var(--accent-orange); color: #111; border-radius: 10px; font-size: 11px; padding: 1px 8px; display: none; }
+
         /* Main Content */
         .content { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
         .page { display: none; animation: fadeIn 0.3s ease; }
@@ -38,6 +39,7 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         h1 { margin-top: 0; font-size: 24px; margin-bottom: 20px; }
+        h3 { margin: 0 0 14px; font-size: 15px; }
 
         /* Cards & Tables */
         .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -45,30 +47,68 @@
         th, td { padding: 12px 15px; border-bottom: 1px solid var(--border); }
         th { color: var(--text-sub); font-size: 13px; font-weight: normal; }
         td { font-size: 14px; }
-        
-        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .sub { font-size: 11.5px; color: var(--text-sub); }
+
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; white-space: nowrap; }
         .badge-active { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
         .badge-trial { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+        .badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .badge-muted { background: var(--bg-elevated); color: var(--text-sub); }
 
         /* Buttons & Inputs */
         button { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: inherit; font-weight: bold; transition: 0.2s; }
         button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: default; }
         button.btn-danger { background: var(--accent-red); }
         button.btn-success { background: var(--accent-green); }
-        
-        select, input { background: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; outline: none; font-family: inherit; }
-        
+        button.btn-ghost { background: var(--bg-elevated); color: var(--text-main); }
+        button.btn-sm { padding: 4px 8px; font-size: 12px; }
+
+        select, input, textarea { background: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; outline: none; font-family: inherit; }
+        label.chk { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field > span { font-size: 12px; color: var(--text-sub); }
+
         /* Auth Overlay */
         #authOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-main); z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
         .auth-box { background: var(--bg-card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); width: 350px; text-align: center; }
         .auth-box input { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
         .auth-box button { width: 100%; }
 
-        /* Package Form */
-        .flex-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .flex-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 
-        /* Responsive Design */
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
+        .modal > .card { width: 560px; max-width: 100%; max-height: 92vh; overflow-y: auto; background: var(--bg-main); }
+
+        /* Features editor */
+        .features-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+        .features-checks { display: flex; flex-wrap: wrap; gap: 16px; }
+        .feat-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+        .feat-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--bg-elevated); color: var(--text-sub); white-space: nowrap; }
+        .feat-tag.off { text-decoration: line-through; opacity: 0.6; }
+
+        /* Stats */
+        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .kpi .kpi-lbl { font-size: 12px; color: var(--text-sub); }
+        .kpi .kpi-val { font-size: 24px; font-weight: 800; margin-top: 4px; }
+        .kpi .kpi-sub { font-size: 11.5px; color: var(--text-sub); margin-top: 2px; }
+        .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .chart-box { position: relative; }
+        .chart-box svg { display: block; max-width: 100%; }
+        .chart-box .bar { fill: var(--accent-blue); }
+        .chart-box .bar:hover, .chart-box .hit:hover + .bar { fill: #60a5fa; }
+        .chart-box .axis { fill: var(--text-sub); font-size: 10px; }
+        .chart-box .grid { stroke: var(--border); stroke-width: 1; }
+        .chart-tip { position: absolute; pointer-events: none; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 12px; display: none; white-space: nowrap; z-index: 5; }
+        .hbar-row { display: grid; grid-template-columns: 120px 1fr 60px; gap: 10px; align-items: center; margin-bottom: 10px; font-size: 13px; }
+        .hbar-track { height: 10px; background: var(--bg-elevated); border-radius: 5px; overflow: hidden; }
+        .hbar-fill { height: 100%; background: var(--accent-blue); border-radius: 4px; }
+
         .table-responsive { width: 100%; overflow-x: auto; }
+        @media (max-width: 1000px) { .charts { grid-template-columns: 1fr; } }
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; min-height: 100vh; overflow-y: auto; }
             .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; padding: 10px; border-left: none; border-bottom: 1px solid var(--border); align-items: center; justify-content: space-around; }
@@ -77,24 +117,29 @@
             .nav-item.active { border-right: none; border-bottom: 4px solid var(--accent-blue); background: none; }
             .content { overflow-y: visible; padding: 15px; }
             .flex-row { flex-direction: column; align-items: stretch; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .auth-box { width: 90%; }
-            #editPackageModal .auth-box { width: 90%; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Edit Package Modal -->
-    <div id="editPackageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
-        <div class="auth-box">
-            <h2 style="color:var(--text-main); font-size: 18px; margin-bottom: 20px;">تعديل الباقة</h2>
-            <input type="hidden" id="editPkgId" />
-            <input type="text" id="editPkgName" placeholder="اسم الباقة" style="width:100%; margin-bottom:15px; box-sizing:border-box;" />
-            <input type="text" id="editPkgPrice" placeholder="السعر" style="width:100%; margin-bottom:15px; box-sizing:border-box;" />
-            <input type="number" id="editPkgDuration" placeholder="المدة بالأيام (مثال: 90)" style="width:100%; margin-bottom:20px; box-sizing:border-box;" />
-            <div style="display:flex; gap:10px;">
-                <button onclick="saveEditedPackage()" style="flex:1;">حفظ</button>
-                <button onclick="document.getElementById('editPackageModal').style.display='none'" class="btn-danger" style="flex:1;">إلغاء</button>
+    <!-- Package Modal (إضافة / تعديل) -->
+    <div id="packageModal" class="modal">
+        <div class="card">
+            <h2 style="font-size: 18px; margin-top: 0;" id="packageModalTitle">باقة جديدة</h2>
+            <input type="hidden" id="pkgId" />
+            <div class="grid-2" style="margin-bottom: 12px;">
+                <label class="field"><span>اسم الباقة</span><input type="text" id="pkgName" placeholder="مثال: الباقة الذهبية" /></label>
+                <label class="field"><span>السعر (زي ما يظهر للعميل)</span><input type="text" id="pkgPrice" placeholder="مثال: 100 جنيه" /></label>
+                <label class="field"><span>السعر كرقم (للخصومات والإحصائيات)</span><input type="number" id="pkgPriceValue" min="0" placeholder="100" /></label>
+                <label class="field"><span>المدة بالأيام</span><input type="number" id="pkgDuration" min="1" placeholder="30" /></label>
+                <label class="field"><span>عدد الأجهزة</span><input type="number" id="pkgMaxDevices" min="1" placeholder="1" /></label>
+            </div>
+            <div id="pkgFeatures"></div>
+            <div class="flex-row" style="margin: 16px 0 0;">
+                <button onclick="savePackage()" style="flex:1;">حفظ</button>
+                <button onclick="closeModal('packageModal')" class="btn-ghost" style="flex:1;">إلغاء</button>
             </div>
         </div>
     </div>
@@ -117,59 +162,83 @@
             <h2>لوحة التحكم</h2>
             <span>Video Downloader Pro</span>
         </div>
-        <div class="nav-item active" onclick="switchPage('usersPage', this)"><i class="fas fa-users"></i> إدارة العملاء</div>
-        <div class="nav-item" onclick="switchPage('packagesPage', this)"><i class="fas fa-box"></i> إدارة الباقات</div>
+        <div class="nav-item active" onclick="switchPage('statsPage', this)"><i class="fas fa-chart-bar"></i> الإحصائيات</div>
+        <div class="nav-item" onclick="switchPage('ordersPage', this)"><i class="fas fa-receipt"></i> الطلبات <span class="nav-count" id="pendingCount">0</span></div>
+        <div class="nav-item" onclick="switchPage('usersPage', this)"><i class="fas fa-users"></i> إدارة العملاء</div>
+        <div class="nav-item" onclick="switchPage('packagesPage', this)"><i class="fas fa-box"></i> الباقات والمميزات</div>
+        <div class="nav-item" onclick="switchPage('couponsPage', this)"><i class="fas fa-ticket-alt"></i> كوبونات الخصم</div>
         <div class="nav-item" onclick="switchPage('updatesPage', this)"><i class="fas fa-sync-alt"></i> إدارة التحديثات</div>
+        <div class="nav-item" onclick="switchPage('settingsPage', this)"><i class="fas fa-cog"></i> الإعدادات</div>
         <div style="flex:1;"></div>
         <div class="nav-item" style="color:var(--accent-red);" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</div>
     </div>
 
     <!-- Main Content -->
     <div class="content">
-        
-        <!-- Users Page -->
-        <div id="usersPage" class="page active">
-            <h1>إدارة العملاء والإحصائيات</h1>
-            
-            <!-- Overall Stats Cards -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                <div class="card" style="display:flex; align-items:center; gap:15px;">
-                    <div style="font-size:30px; color:var(--accent-blue);"><i class="fas fa-users"></i></div>
-                    <div>
-                        <div style="font-size:12px; color:var(--text-sub);">إجمالي العملاء</div>
-                        <div id="summaryTotalUsers" style="font-size:20px; font-weight:bold;">0</div>
-                    </div>
+
+        <!-- Stats Page -->
+        <div id="statsPage" class="page active">
+            <h1>الإحصائيات</h1>
+            <div class="kpis" id="kpis"></div>
+            <div class="charts">
+                <div class="card chart-box">
+                    <h3>تسجيلات جديدة — آخر 30 يوم</h3>
+                    <div id="chartSignups"></div>
+                    <div class="chart-tip" id="tipSignups"></div>
                 </div>
-                <div class="card" style="display:flex; align-items:center; gap:15px;">
-                    <div style="font-size:30px; color:var(--accent-green);"><i class="fas fa-user-check"></i></div>
-                    <div>
-                        <div style="font-size:12px; color:var(--text-sub);">الاشتراكات النشطة</div>
-                        <div id="summaryActiveUsers" style="font-size:20px; font-weight:bold;">0</div>
-                    </div>
-                </div>
-                <div class="card" style="display:flex; align-items:center; gap:15px;">
-                    <div style="font-size:30px; color:var(--accent-orange);"><i class="fas fa-download"></i></div>
-                    <div>
-                        <div style="font-size:12px; color:var(--text-sub);">إجمالي التحميلات</div>
-                        <div id="summaryTotalDownloads" style="font-size:20px; font-weight:bold;">0 فيديو</div>
-                    </div>
-                </div>
-                <div class="card" style="display:flex; align-items:center; gap:15px;">
-                    <div style="font-size:30px; color:#a855f7;"><i class="fas fa-hdd"></i></div>
-                    <div>
-                        <div style="font-size:12px; color:var(--text-sub);">إجمالي السعة المحملة</div>
-                        <div id="summaryTotalSize" style="font-size:20px; font-weight:bold;">0 MB</div>
-                    </div>
+                <div class="card chart-box">
+                    <h3>الإيرادات (طلبات متفعّلة) — آخر 6 شهور</h3>
+                    <div id="chartRevenue"></div>
+                    <div class="chart-tip" id="tipRevenue"></div>
                 </div>
             </div>
+            <div class="charts">
+                <div class="card">
+                    <h3>المشتركين النشطين حسب الباقة</h3>
+                    <div id="pkgDistribution"></div>
+                </div>
+                <div class="card">
+                    <h3>اشتراكات هتخلص خلال 7 أيام</h3>
+                    <div class="table-responsive"><table><tbody id="expiringBody"></tbody></table></div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Orders Page -->
+        <div id="ordersPage" class="page">
+            <h1>طلبات الاشتراك (من البوت)</h1>
             <div class="card" style="margin-bottom: 20px;">
-                <div class="flex-row">
-                    <input type="text" id="filterEmail" placeholder="بحث بالإيميل..." onkeyup="renderUsers()" style="flex:2;" />
+                <div class="flex-row" style="margin:0;">
+                    <select id="filterOrders" onchange="renderOrders()">
+                        <option value="pending">قيد المراجعة</option>
+                        <option value="approved">المتفعّلة</option>
+                        <option value="rejected">المرفوضة</option>
+                        <option value="all">الكل</option>
+                    </select>
+                    <span class="sub">الإيصال بيوصلك على تيليجرام برقم الطلب. لما تفعّل أو ترفض، العميل بيوصله رسالة من البوت تلقائي.</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>رقم / التاريخ</th><th>العميل</th><th>الباقة</th><th>المبلغ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="ordersBody"><tr><td colspan="6" style="text-align:center;">جاري التحميل...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Page -->
+        <div id="usersPage" class="page">
+            <h1>إدارة العملاء</h1>
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="flex-row" style="margin:0;">
+                    <input type="text" id="filterEmail" placeholder="بحث بالإيميل أو كود الدعوة..." oninput="renderUsers()" style="flex:2;" />
                     <select id="filterStatus" onchange="renderUsers()" style="flex:1;">
                         <option value="all">جميع الحالات</option>
                         <option value="active">مفعل</option>
                         <option value="trial">فترة تجريبية</option>
+                        <option value="expired">منتهي</option>
                     </select>
                     <select id="filterPackage" onchange="renderUsers()" style="flex:1;">
                         <option value="all">جميع الباقات</option>
@@ -185,7 +254,7 @@
                                 <th>تاريخ الانضمام</th>
                                 <th>إحصائيات التحميل</th>
                                 <th>الحالة</th>
-                                <th>الباقة الحالية</th>
+                                <th>الباقة</th>
                                 <th>الأجهزة</th>
                                 <th>إجراءات التحكم</th>
                             </tr>
@@ -200,29 +269,39 @@
 
         <!-- Packages Page -->
         <div id="packagesPage" class="page">
-            <h1>إدارة الباقات والأسعار</h1>
+            <h1>الباقات والمميزات</h1>
+            <div class="flex-row">
+                <button onclick="openPackageModal('')"><i class="fas fa-plus"></i> باقة جديدة</button>
+                <span class="sub">المميزات بتتطبق في البرنامج بعد التحقق من السيرفر. الباقة اللي مالهاش مميزات متحددة بتاخد كل حاجة.</span>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>اسم الباقة</th><th>السعر</th><th>المدة</th><th>الأجهزة</th><th>المميزات</th><th>إجراءات</th></tr></thead>
+                        <tbody id="packagesTableBody"><tr><td colspan="6" style="text-align:center;">جاري تحميل الباقات...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coupons Page -->
+        <div id="couponsPage" class="page">
+            <h1>كوبونات الخصم</h1>
             <div class="card" style="margin-bottom: 20px;">
-                <div class="flex-row">
-                    <input type="text" id="newPkgName" placeholder="اسم الباقة (مثال: الباقة الذهبية)" style="flex:2;" />
-                    <input type="text" id="newPkgPrice" placeholder="السعر (مثال: 50$)" style="flex:1;" />
-                    <input type="number" id="newPkgDuration" placeholder="المدة بالأيام" style="flex:1;" />
-                    <button onclick="addPackage()"><i class="fas fa-plus"></i> إضافة الباقة</button>
+                <div class="flex-row" style="margin:0; align-items:flex-end;">
+                    <label class="field" style="flex:1.4;"><span>الكود</span><input type="text" id="cpCode" placeholder="RAMADAN25" dir="ltr" style="text-transform:uppercase;" /></label>
+                    <label class="field" style="flex:0.7;"><span>الخصم %</span><input type="number" id="cpPercent" min="1" max="100" placeholder="20" /></label>
+                    <label class="field" style="flex:0.8;"><span>أقصى استخدام (0 = مفتوح)</span><input type="number" id="cpMaxUses" min="0" value="0" /></label>
+                    <label class="field" style="flex:1;"><span>ينتهي (اختياري)</span><input type="date" id="cpExpires" /></label>
+                    <label class="field" style="flex:1;"><span>على باقة</span><select id="cpPackage"><option value="">كل الباقات</option></select></label>
+                    <button onclick="addCoupon()"><i class="fas fa-plus"></i> إضافة</button>
                 </div>
             </div>
             <div class="card">
                 <div class="table-responsive">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>اسم الباقة</th>
-                                <th>السعر</th>
-                                <th>المدة (أيام)</th>
-                                <th>إجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="packagesTableBody">
-                            <tr><td colspan="4" style="text-align:center;">جاري تحميل الباقات...</td></tr>
-                        </tbody>
+                        <thead><tr><th>الكود</th><th>الخصم</th><th>الاستخدام</th><th>الباقة</th><th>ينتهي</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="couponsBody"><tr><td colspan="7" style="text-align:center;">جاري التحميل...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -234,58 +313,72 @@
             <div class="card" style="max-width: 600px; margin-top: 20px;">
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; color: var(--text-sub);">الإصدار الجديد (مثال: 3.0.0)</label>
-                    <input type="text" id="updateVersion" placeholder="3.0.0" style="width: 100%;" />
+                    <input type="text" id="updateVersion" placeholder="3.0.0" style="width: 100%; box-sizing: border-box;" />
                 </div>
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; color: var(--text-sub);">رابط التحميل (مثال: رابط جوجل درايف)</label>
-                    <input type="text" id="updateUrl" placeholder="https://..." style="width: 100%;" />
+                    <input type="text" id="updateUrl" placeholder="https://..." style="width: 100%; box-sizing: border-box;" />
                 </div>
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; color: var(--text-sub);">ما الجديد في هذا التحديث؟</label>
-                    <textarea id="updateChangelog" rows="5" placeholder="- إضافة ميزات جديدة..." style="width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-family: inherit;"></textarea>
+                    <textarea id="updateChangelog" rows="5" placeholder="- إضافة ميزات جديدة..." style="width: 100%; box-sizing: border-box;"></textarea>
                 </div>
-                <button class="btn-primary" onclick="saveUpdateInfo()" style="width: 100%; font-size: 16px;"><i class="fas fa-upload"></i> نشر التحديث للمستخدمين</button>
+                <button onclick="saveUpdateInfo()" style="width: 100%; font-size: 16px;"><i class="fas fa-upload"></i> نشر التحديث للمستخدمين</button>
                 <div id="updateMsg" style="margin-top: 15px; text-align: center; color: var(--accent-green); font-weight: bold; display: none;">تم نشر التحديث بنجاح!</div>
             </div>
         </div>
 
-    </div>
-
-    <!-- Manage Devices Modal -->
- <div id="historyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-        <div class="card" style="width: 640px; max-width: 92%; max-height: 90vh; display:flex; flex-direction:column; background: var(--bg-main);">
-            <h2 style="margin-bottom: 6px;"><i class="fas fa-history"></i> سجل التحميلات</h2>
-            <div style="margin-bottom: 14px; color: var(--text-sub); font-size: 13px;"><span id="historyUserEmail"></span> — <span id="historyCount">0</span> تحميل</div>
-            <input type="hidden" id="historyUserId" />
-            <div id="historyList" style="background: var(--bg-card); padding: 10px; border-radius: 8px; min-height: 60px; margin-bottom: 16px; overflow-y:auto; flex:1;"></div>
-            <div class="flex-row">
-                <button class="btn-danger" style="flex:1;" onclick="clearUserHistory()"><i class="fas fa-trash"></i> مسح السجل كله</button>
-                <button class="btn-primary" style="flex:1;" onclick="document.getElementById('historyModal').style.display='none'">إغلاق</button>
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page">
+            <h1>الإعدادات</h1>
+            <div class="card" style="max-width: 720px; display:flex; flex-direction:column; gap:16px;">
+                <label class="field"><span>رابط سيرفر التراخيص (رابط البوت على Render)</span>
+                    <input type="text" id="setLicenseServer" dir="ltr" placeholder="https://your-bot.onrender.com" /></label>
+                <div class="grid-2">
+                    <label class="field"><span>مدة الفترة التجريبية (أيام)</span><input type="number" id="setTrialDays" min="1" max="365" /></label>
+                    <label class="field"><span>مكافأة الدعوة (أيام للي دعا، لما المدعو يشترك)</span><input type="number" id="setReferralDays" min="0" max="90" /></label>
+                </div>
+                <div>
+                    <div style="font-size:13px; font-weight:bold; margin-bottom:8px;">مميزات الفترة التجريبية</div>
+                    <div id="trialFeatures"></div>
+                </div>
+                <button onclick="saveSettings()"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+                <div id="settingsMsg" class="sub" style="text-align:center;"></div>
             </div>
         </div>
     </div>
 
-    <div id="manageDevicesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-        <div class="card" style="width: 500px; max-width: 90%; background: var(--bg-main);">
-            <h2 style="margin-bottom: 20px;"><i class="fas fa-desktop"></i> إدارة الأجهزة للمستخدم</h2>
+    <!-- History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="card" style="width: 640px; display:flex; flex-direction:column;">
+            <h2 style="margin: 0 0 6px;"><i class="fas fa-history"></i> سجل التحميلات</h2>
+            <div style="margin-bottom: 14px; color: var(--text-sub); font-size: 13px;"><span id="historyUserEmail"></span> — <span id="historyCount">0</span> تحميل</div>
+            <input type="hidden" id="historyUserId" />
+            <div id="historyList" style="background: var(--bg-card); padding: 10px; border-radius: 8px; min-height: 60px; margin-bottom: 16px; overflow-y:auto; max-height: 55vh;"></div>
+            <div class="flex-row" style="margin:0;">
+                <button class="btn-danger" style="flex:1;" onclick="clearUserHistory()"><i class="fas fa-trash"></i> مسح السجل كله</button>
+                <button class="btn-ghost" style="flex:1;" onclick="closeModal('historyModal')">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Devices Modal -->
+    <div id="manageDevicesModal" class="modal">
+        <div class="card" style="width: 500px;">
+            <h2 style="margin: 0 0 20px;"><i class="fas fa-desktop"></i> إدارة الأجهزة للمستخدم</h2>
             <input type="hidden" id="manageDevicesUserId" />
-            
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 5px;">الحد الأقصى للأجهزة المسموح بها:</label>
-                <div class="flex-row">
+                <div class="flex-row" style="margin:0;">
                     <input type="number" id="manageMaxDevices" min="1" style="flex:1;" />
                     <button class="btn-success" onclick="saveMaxDevices()">حفظ التعديل</button>
                 </div>
             </div>
-
             <div style="margin-bottom: 10px;"><strong>الأجهزة المسجلة حالياً:</strong></div>
-            <div id="devicesList" style="background: var(--bg-card); padding: 10px; border-radius: 8px; min-height: 50px; margin-bottom: 20px;">
-                <!-- Devices injected here -->
-            </div>
-
-            <div class="flex-row">
+            <div id="devicesList" style="background: var(--bg-card); padding: 10px; border-radius: 8px; min-height: 50px; margin-bottom: 20px;"></div>
+            <div class="flex-row" style="margin:0;">
                 <button class="btn-danger" style="flex:1;" onclick="clearAllDevices()"><i class="fas fa-trash"></i> تصفير كل الأجهزة</button>
-                <button class="btn-primary" style="flex:1;" onclick="document.getElementById('manageDevicesModal').style.display='none'">إغلاق</button>
+                <button class="btn-ghost" style="flex:1;" onclick="closeModal('manageDevicesModal')">إغلاق</button>
             </div>
         </div>
     </div>
@@ -294,7 +387,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBeLAM_PeieqjvwVdqbp3rh3lzS8Oz5JxM",
@@ -307,17 +400,97 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const FV = firebase.firestore.FieldValue;
+        const TS = firebase.firestore.Timestamp;
 
         const ADMIN_EMAIL = "eng.mo.keshk@gmail.com";
-        let globalPackages = [];
+        const DAY = 24 * 60 * 60 * 1000;
 
-        // Auth Logic
+        let globalPackages = [];
+        let globalUsers = [];
+        let globalOrders = [];
+        let globalCoupons = [];
+        let appConfig = { trialDays: 30, referralBonusDays: 7, licenseServer: '', trialFeatures: null };
+        let listenersStarted = false;
+
+        // ======================= أدوات =======================
+        function escapeHtml(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+        const ms = t => t && t.toMillis ? t.toMillis() : 0;
+        const fmtDate = t => ms(t) ? new Date(ms(t)).toLocaleDateString('ar-EG') : '-';
+        const fmtMoney = n => (Math.round(n) || 0).toLocaleString('ar-EG') + ' ج';
+        const fmtSize = mb => mb > 1024 ? (mb / 1024).toFixed(1) + ' GB' : (mb || 0).toFixed(0) + ' MB';
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function priceNumber(p) {
+            if (typeof p.priceValue === 'number' && p.priceValue > 0) return p.priceValue;
+            const m = String(p.price || '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/\d+(\.\d+)?/);
+            return m ? parseFloat(m[0]) : 0;
+        }
+
+        // حالة المستخدم الفعلية (نفس منطق البرنامج والسيرفر)
+        function userState(u) {
+            const now = Date.now();
+            if (u.status === 'active') return ms(u.expiresAt) > now ? 'active' : 'expired';
+            const created = ms(u.createdAt) || now;
+            const end = created + (appConfig.trialDays + (parseInt(u.trialBonusDays) || 0)) * DAY;
+            return end > now ? 'trial' : 'expired';
+        }
+        function trialEnd(u) { return (ms(u.createdAt) || Date.now()) + (appConfig.trialDays + (parseInt(u.trialBonusDays) || 0)) * DAY; }
+
+        // ======================= محرر المميزات =======================
+        const FEATURE_LABELS = { playlist: 'قوائم التشغيل', convert: 'تحويل الصيغ', schedule: 'الجدولة', follows: 'متابعة القنوات' };
+        function featuresEditor(prefix) {
+            return `
+            <div class="features-box">
+                <div class="grid-3">
+                    <label class="field"><span>أعلى جودة</span>
+                        <select id="${prefix}_maxQuality">
+                            <option value="0">بدون حد (لحد 4K/8K)</option><option value="2160">4K (2160p)</option><option value="1440">1440p</option>
+                            <option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option>
+                        </select></label>
+                    <label class="field"><span>تحميلات متزامنة (0 = حسب الإعدادات)</span><input type="number" id="${prefix}_maxConcurrent" min="0" max="10" /></label>
+                    <label class="field"><span>حد التحميلات في اليوم (0 = مفتوح)</span><input type="number" id="${prefix}_dailyDownloads" min="0" /></label>
+                </div>
+                <div class="features-checks">
+                    ${Object.entries(FEATURE_LABELS).map(([k, l]) => `<label class="chk"><input type="checkbox" id="${prefix}_${k}" /> ${l}</label>`).join('')}
+                </div>
+            </div>`;
+        }
+        function fillFeatures(prefix, f) {
+            f = f || {};
+            document.getElementById(prefix + '_maxQuality').value = String(parseInt(f.maxQuality) || 0);
+            document.getElementById(prefix + '_maxConcurrent').value = parseInt(f.maxConcurrent) || 0;
+            document.getElementById(prefix + '_dailyDownloads').value = parseInt(f.dailyDownloads) || 0;
+            for (const k of Object.keys(FEATURE_LABELS)) document.getElementById(prefix + '_' + k).checked = f[k] !== false;
+        }
+        function readFeatures(prefix) {
+            const f = {
+                maxQuality: parseInt(document.getElementById(prefix + '_maxQuality').value) || 0,
+                maxConcurrent: Math.max(0, Math.min(10, parseInt(document.getElementById(prefix + '_maxConcurrent').value) || 0)),
+                dailyDownloads: Math.max(0, parseInt(document.getElementById(prefix + '_dailyDownloads').value) || 0)
+            };
+            for (const k of Object.keys(FEATURE_LABELS)) f[k] = document.getElementById(prefix + '_' + k).checked;
+            return f;
+        }
+        function featureTags(f) {
+            if (!f) return '<span class="feat-tag">كل المميزات</span>';
+            let t = [];
+            t.push(`<span class="feat-tag">${f.maxQuality ? f.maxQuality + 'p' : 'كل الجودات'}</span>`);
+            if (f.dailyDownloads) t.push(`<span class="feat-tag">${f.dailyDownloads} تحميل/يوم</span>`);
+            if (f.maxConcurrent) t.push(`<span class="feat-tag">${f.maxConcurrent} متزامن</span>`);
+            for (const [k, l] of Object.entries(FEATURE_LABELS)) t.push(`<span class="feat-tag ${f[k] === false ? 'off' : ''}">${l}</span>`);
+            return `<div class="feat-tags">${t.join('')}</div>`;
+        }
+        document.getElementById('pkgFeatures').innerHTML = featuresEditor('pf');
+        document.getElementById('trialFeatures').innerHTML = featuresEditor('tf');
+
+        // ======================= الدخول =======================
         auth.onAuthStateChanged(user => {
             if (user) {
                 if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     document.getElementById('authOverlay').style.display = 'none';
-                    loadPackages();
-                    loadUsers();
+                    startListeners();
                 } else {
                     document.getElementById('authError').innerText = "غير مصرح لك بالدخول!";
                     auth.signOut();
@@ -330,28 +503,83 @@
         function loginAdmin() {
             const email = document.getElementById('adminEmail').value;
             const pass = document.getElementById('adminPass').value;
-            auth.signInWithEmailAndPassword(email, pass).catch(err => {
+            auth.signInWithEmailAndPassword(email, pass).catch(() => {
                 document.getElementById('authError').innerText = "خطأ في بيانات الدخول";
             });
         }
+        function logout() { auth.signOut().then(() => location.reload()); }
 
-        function logout() { auth.signOut(); }
+        // كل البيانات بتتسمع مرة واحدة بس (قبل كده كل تغيير في الباقات كان بيفتح listener جديد)
+        function startListeners() {
+            if (listenersStarted) return;
+            listenersStarted = true;
+            loadConfig();
+            db.collection("packages").onSnapshot(snap => {
+                globalPackages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderPackages(); renderPackageFilters(); renderUsers(); renderCoupons(); renderStats();
+            }, e => console.error(e));
+            db.collection("users").onSnapshot(snap => {
+                globalUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                globalUsers.sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
+                renderUsers(); renderStats();
+            }, e => console.error(e));
+            db.collection("orders").orderBy("createdAt", "desc").limit(500).onSnapshot(snap => {
+                globalOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderOrders(); renderStats();
+            }, e => console.error(e));
+            db.collection("coupons").onSnapshot(snap => {
+                globalCoupons = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderCoupons();
+            }, e => console.error(e));
+        }
 
-        // Navigation
         function switchPage(pageId, element) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             element.classList.add('active');
-            
-            if(pageId === 'usersPage') loadUsers();
-            if(pageId === 'packagesPage') loadPackages();
-            if(pageId === 'updatesPage') loadUpdateInfo();
+            if (pageId === 'updatesPage') loadUpdateInfo();
+            if (pageId === 'settingsPage') fillSettings();
+            if (pageId === 'statsPage') renderStats();
         }
 
-        // =======================
-        // Updates Management
-        // =======================
+        // ======================= الإعدادات =======================
+        async function loadConfig() {
+            try {
+                const d = await db.collection('app_config').doc('public').get();
+                const c = d.exists ? d.data() : {};
+                appConfig = {
+                    trialDays: parseInt(c.trialDays) > 0 ? parseInt(c.trialDays) : 30,
+                    referralBonusDays: parseInt(c.referralBonusDays) >= 0 ? parseInt(c.referralBonusDays) : 7,
+                    licenseServer: c.licenseServer || '',
+                    trialFeatures: c.trialFeatures || null
+                };
+            } catch (e) { console.error(e); }
+            renderUsers(); renderStats();
+        }
+        function fillSettings() {
+            document.getElementById('setLicenseServer').value = appConfig.licenseServer;
+            document.getElementById('setTrialDays').value = appConfig.trialDays;
+            document.getElementById('setReferralDays').value = appConfig.referralBonusDays;
+            fillFeatures('tf', appConfig.trialFeatures);
+        }
+        async function saveSettings() {
+            const server = document.getElementById('setLicenseServer').value.trim().replace(/\/+$/, '');
+            const trialDays = parseInt(document.getElementById('setTrialDays').value);
+            const refDays = parseInt(document.getElementById('setReferralDays').value);
+            if (server && !/^https:\/\/[^\s/]+/.test(server)) return alert("رابط السيرفر لازم يبدأ بـ https://");
+            if (!(trialDays >= 1 && trialDays <= 365)) return alert("مدة التجربة من 1 لـ 365 يوم");
+            if (!(refDays >= 0 && refDays <= 90)) return alert("مكافأة الدعوة من 0 لـ 90 يوم");
+            const data = { licenseServer: server, trialDays, referralBonusDays: refDays, trialFeatures: readFeatures('tf'), updatedAt: FV.serverTimestamp() };
+            try {
+                await db.collection('app_config').doc('public').set(data, { merge: true });
+                appConfig = { ...appConfig, ...data };
+                document.getElementById('settingsMsg').textContent = '✅ اتحفظ';
+                renderUsers(); renderStats();
+            } catch (e) { alert("خطأ: " + e.message); }
+        }
+
+        // ======================= التحديثات =======================
         function loadUpdateInfo() {
             db.collection("app_update").doc("latest").get().then((doc) => {
                 if (doc.exists) {
@@ -362,246 +590,215 @@
                 }
             }).catch(console.error);
         }
-
         function saveUpdateInfo() {
             const version = document.getElementById('updateVersion').value.trim();
             const url = document.getElementById('updateUrl').value.trim();
             const changelog = document.getElementById('updateChangelog').value.trim();
-
-            if(!version || !url) {
-                alert("يرجى إدخال رقم الإصدار ورابط التحميل على الأقل.");
-                return;
-            }
-
+            if (!version || !url) return alert("يرجى إدخال رقم الإصدار ورابط التحميل على الأقل.");
             db.collection("app_update").doc("latest").set({
-                latest_version: version,
-                download_url: url,
-                changelog: changelog,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                latest_version: version, download_url: url, changelog: changelog, updatedAt: FV.serverTimestamp()
             }, { merge: true }).then(() => {
                 const msg = document.getElementById('updateMsg');
                 msg.style.display = 'block';
                 setTimeout(() => msg.style.display = 'none', 3000);
-            }).catch((error) => {
-                alert("خطأ أثناء النشر: " + error.message);
+            }).catch(e => alert("خطأ أثناء النشر: " + e.message));
+        }
+
+        // ======================= الباقات =======================
+        function renderPackages() {
+            let html = "";
+            globalPackages.forEach(p => {
+                html += `<tr>
+                    <td><strong>${escapeHtml(p.name)}</strong></td>
+                    <td>${escapeHtml(p.price)}${p.priceValue ? `<div class="sub">${p.priceValue} ج</div>` : ''}</td>
+                    <td>${escapeHtml(p.duration || '-')} يوم</td>
+                    <td>${escapeHtml(p.maxDevices || 1)}</td>
+                    <td>${featureTags(p.features)}</td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-success btn-sm" onclick="openPackageModal('${p.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-danger btn-sm" onclick="deletePackage('${p.id}')"><i class="fas fa-trash"></i></button>
+                    </td></tr>`;
             });
+            document.getElementById('packagesTableBody').innerHTML = html || `<tr><td colspan="6" style="text-align:center;">لا توجد باقات حالياً</td></tr>`;
         }
-
-        // Packages Logic
-        function loadPackages() {
-            db.collection("packages").onSnapshot(snapshot => {
-                globalPackages = [];
-                let html = "";
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    globalPackages.push({ id: doc.id, ...data });
-                    html += `
-                        <tr>
-                            <td>${data.name}</td>
-                            <td>${data.price}</td>
-                            <td>${data.duration || 'غير محدد'}</td>
-                            <td>
-                                <button class="btn-success" onclick="editPackage('${doc.id}', '${data.name}', '${data.price}', '${data.duration || ''}')"><i class="fas fa-edit"></i></button>
-                                <button class="btn-danger" onclick="deletePackage('${doc.id}')"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                if(html === "") html = `<tr><td colspan="4" style="text-align:center;">لا توجد باقات حالياً</td></tr>`;
-                document.getElementById('packagesTableBody').innerHTML = html;
-                
-                // Refresh users table to update dropdowns
-                loadUsers();
+        function renderPackageFilters() {
+            let f = `<option value="all">جميع الباقات</option><option value="none">بدون باقة</option>`;
+            let c = `<option value="">كل الباقات</option>`;
+            globalPackages.forEach(p => {
+                f += `<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`;
+                c += `<option value="${p.id}">${escapeHtml(p.name)}</option>`;
             });
+            const fp = document.getElementById('filterPackage'), cur = fp.value;
+            fp.innerHTML = f; fp.value = cur || 'all'; if (!fp.value) fp.value = 'all';
+            document.getElementById('cpPackage').innerHTML = c;
         }
-
-        function addPackage() {
-            const name = document.getElementById('newPkgName').value;
-            const price = document.getElementById('newPkgPrice').value;
-            const duration = parseInt(document.getElementById('newPkgDuration').value) || 0;
-            if(!name) return alert("أدخل اسم الباقة");
-            if(duration <= 0) return alert("يرجى إدخال مدة صحيحة بالأيام");
-            db.collection("packages").add({ name, price, duration });
-            document.getElementById('newPkgName').value = "";
-            document.getElementById('newPkgPrice').value = "";
-            document.getElementById('newPkgDuration').value = "";
+        function openPackageModal(id) {
+            const p = globalPackages.find(x => x.id === id) || {};
+            document.getElementById('packageModalTitle').textContent = id ? 'تعديل الباقة' : 'باقة جديدة';
+            document.getElementById('pkgId').value = id || '';
+            document.getElementById('pkgName').value = p.name || '';
+            document.getElementById('pkgPrice').value = p.price || '';
+            document.getElementById('pkgPriceValue').value = p.priceValue || (id ? priceNumber(p) || '' : '');
+            document.getElementById('pkgDuration').value = p.duration || '';
+            document.getElementById('pkgMaxDevices').value = p.maxDevices || 1;
+            fillFeatures('pf', p.features);
+            document.getElementById('packageModal').style.display = 'flex';
         }
-
-        function editPackage(id, oldName, oldPrice, oldDuration) {
-            document.getElementById('editPkgId').value = id;
-            document.getElementById('editPkgName').value = oldName;
-            document.getElementById('editPkgPrice').value = oldPrice;
-            document.getElementById('editPkgDuration').value = oldDuration;
-            document.getElementById('editPackageModal').style.display = 'flex';
+        async function savePackage() {
+            const id = document.getElementById('pkgId').value;
+            const name = document.getElementById('pkgName').value.trim();
+            const price = document.getElementById('pkgPrice').value.trim();
+            const priceValue = parseFloat(document.getElementById('pkgPriceValue').value) || 0;
+            const duration = parseInt(document.getElementById('pkgDuration').value) || 0;
+            const maxDevices = Math.max(1, parseInt(document.getElementById('pkgMaxDevices').value) || 1);
+            if (!name) return alert("الاسم مطلوب");
+            if (duration <= 0) return alert("يرجى إدخال مدة صحيحة بالأيام");
+            if (globalPackages.some(p => p.name === name && p.id !== id)) return alert("فيه باقة بنفس الاسم");
+            const data = { name, price, priceValue, duration, maxDevices, features: readFeatures('pf') };
+            try {
+                if (id) {
+                    const old = globalPackages.find(p => p.id === id);
+                    await db.collection("packages").doc(id).update(data);
+                    // اسم الباقة اتغير: نحدّث العملاء المشتركين فيها
+                    if (old && old.name !== name) {
+                        const affected = globalUsers.filter(u => u.packageId === id || (!u.packageId && u.package === old.name));
+                        for (let i = 0; i < affected.length; i += 400) {
+                            const batch = db.batch();
+                            affected.slice(i, i + 400).forEach(u => batch.update(db.collection('users').doc(u.id), { package: name, packageId: id }));
+                            await batch.commit();
+                        }
+                    }
+                } else {
+                    await db.collection("packages").add(data);
+                }
+                closeModal('packageModal');
+            } catch (e) { alert("خطأ: " + e.message); }
         }
-
-        function saveEditedPackage() {
-            const id = document.getElementById('editPkgId').value;
-            const newName = document.getElementById('editPkgName').value;
-            const newPrice = document.getElementById('editPkgPrice').value;
-            const newDuration = parseInt(document.getElementById('editPkgDuration').value) || 0;
-            
-            if(!newName) return alert("الاسم مطلوب");
-            if(newDuration <= 0) return alert("يرجى إدخال مدة صحيحة بالأيام");
-            
-            db.collection("packages").doc(id).update({
-                name: newName,
-                price: newPrice,
-                duration: newDuration
-            }).then(() => {
-                document.getElementById('editPackageModal').style.display = 'none';
-            });
-        }
-
         function deletePackage(id) {
-            if(confirm("هل أنت متأكد من حذف هذه الباقة؟")) {
+            const p = globalPackages.find(x => x.id === id);
+            const n = globalUsers.filter(u => userState(u) === 'active' && (u.packageId === id || u.package === (p && p.name))).length;
+            if (confirm(`هل أنت متأكد من حذف الباقة؟${n ? `\n⚠️ فيه ${n} مشترك نشط عليها (هياخدوا كل المميزات لحد ما اشتراكهم يخلص).` : ''}`)) {
                 db.collection("packages").doc(id).delete();
             }
         }
 
-        // Users Logic
-        let globalUsers = [];
-
-        function loadUsers() {
-            db.collection("users").onSnapshot(snapshot => {
-                globalUsers = [];
-                snapshot.forEach(doc => {
-                    globalUsers.push({ id: doc.id, ...doc.data() });
-                });
-                
-                // Sort client-side
-                globalUsers.sort((a, b) => {
-                    let tA = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate() : 0;
-                    let tB = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate() : 0;
-                    return tB - tA;
-                });
-                
-                // Update package filter dropdown
-                let filterPkgHtml = `<option value="all">جميع الباقات</option><option value="none">بدون باقة</option>`;
-                globalPackages.forEach(p => {
-                    filterPkgHtml += `<option value="${p.name}">${p.name}</option>`;
-                });
-                document.getElementById('filterPackage').innerHTML = filterPkgHtml;
-                
-                renderUsers();
-            });
-        }
-
+        // ======================= العملاء =======================
         function renderUsers() {
-            const searchEmail = document.getElementById('filterEmail').value.toLowerCase();
+            const q = document.getElementById('filterEmail').value.trim().toLowerCase();
             const filterStatus = document.getElementById('filterStatus').value;
             const filterPackage = document.getElementById('filterPackage').value;
-
-            let totalUsers = globalUsers.length;
-            let activeUsers = 0;
-            let totalDownloadsAll = 0;
-            let totalDownloadedMBAll = 0;
-
-            globalUsers.forEach(u => {
-                if (u.status === 'active') activeUsers++;
-                if (u.totalDownloads) totalDownloadsAll += u.totalDownloads;
-                if (u.totalDownloadedMB) totalDownloadedMBAll += u.totalDownloadedMB;
-            });
-
-            document.getElementById('summaryTotalUsers').textContent = totalUsers;
-            document.getElementById('summaryActiveUsers').textContent = activeUsers;
-            document.getElementById('summaryTotalDownloads').textContent = totalDownloadsAll.toLocaleString('ar-EG') + ' فيديو';
-            
-            let formattedTotalSize = totalDownloadedMBAll > 1024 
-                ? (totalDownloadedMBAll / 1024).toFixed(2) + ' GB' 
-                : totalDownloadedMBAll.toFixed(1) + ' MB';
-            document.getElementById('summaryTotalSize').textContent = formattedTotalSize;
-
             let html = "";
-            globalUsers.forEach(data => {
-                // Apply Filters
-                if (searchEmail && !data.email.toLowerCase().includes(searchEmail)) return;
-                if (filterStatus !== 'all' && data.status !== filterStatus) return;
-                
-                let userPkg = data.package || 'none';
+            globalUsers.forEach(u => {
+                const st = userState(u);
+                if (q && !(u.email || '').toLowerCase().includes(q) && (u.referralCode || '').toLowerCase() !== q) return;
+                if (filterStatus !== 'all' && st !== filterStatus) return;
+                const userPkg = u.package || 'none';
                 if (filterPackage !== 'all' && filterPackage !== userPkg) return;
 
-                // Generate Packages Dropdown
-                let pkgOptions = `<option value="">بدون باقة</option>`;
+                let pkgOptions = `<option value="">اختار باقة</option>`;
                 globalPackages.forEach(p => {
-                    let selected = (data.package === p.name) ? "selected" : "";
-                    pkgOptions += `<option value="${p.name}" ${selected}>${p.name}</option>`;
+                    const sel = (u.packageId === p.id || (!u.packageId && u.package === p.name)) ? "selected" : "";
+                    pkgOptions += `<option value="${p.id}" ${sel}>${escapeHtml(p.name)}</option>`;
                 });
 
-                let statusBadge = data.status === 'active' 
-                    ? `<span class="badge badge-active">مفعل</span>` 
-                    : `<span class="badge badge-trial">فترة تجريبية</span>`;
+                let statusBadge;
+                if (st === 'active') statusBadge = `<span class="badge badge-active">مفعل</span><div class="sub" style="margin-top:4px;">ينتهي: ${fmtDate(u.expiresAt)}</div>`;
+                else if (st === 'trial') statusBadge = `<span class="badge badge-trial">تجريبي</span><div class="sub" style="margin-top:4px;">فاضل ${Math.ceil((trialEnd(u) - Date.now()) / DAY)} يوم</div>`;
+                else statusBadge = `<span class="badge badge-expired">منتهي</span>`;
 
-                let dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('ar-EG') : 'غير معروف';
-                let expiryStr = data.expiresAt ? data.expiresAt.toDate().toLocaleDateString('ar-EG') : '-';
-                if (data.status === 'active') {
-                    statusBadge += `<div style="font-size:11px; margin-top:4px; color:var(--text-sub);">ينتهي: ${expiryStr}</div>`;
-                }
+                const extras = [];
+                if (u.telegramChatId) extras.push('<i class="fab fa-telegram" title="مربوط بتيليجرام" style="color:#38bdf8;"></i>');
+                if (u.referralCode) extras.push(`كود: ${escapeHtml(u.referralCode)}`);
+                if (u.referralCount) extras.push(`🎁 دعا ${u.referralCount}`);
+                if (u.referredBy) extras.push(`مدعو من ${escapeHtml(u.referredBy)}`);
 
-                let dlCount = data.totalDownloads || 0;
-                let dlMB = data.totalDownloadedMB || 0;
-                let dlSizeStr = dlMB > 1024 ? (dlMB / 1024).toFixed(1) + ' GB' : dlMB.toFixed(0) + ' MB';
-                let downloadsStatsHtml = `<div><strong>${dlCount}</strong> فيديو</div><div style="font-size:11px; color:var(--text-sub);">${dlSizeStr}</div>`;
+                const devicesHtml = `<button class="btn-sm" onclick='openDevicesModal("${u.id}")'><i class="fas fa-desktop"></i> ${(u.devices || []).length} / ${u.max_devices || 1}</button>`;
+                const actions = st === 'active'
+                    ? `<button class="btn-success btn-sm" onclick="activateFromRow('${u.id}')" title="يضيف مدة الباقة على تاريخ الانتهاء الحالي">تجديد</button>
+                       <button class="btn-danger btn-sm" onclick="updateUserStatus('${u.id}', 'trial')">إلغاء التفعيل</button>`
+                    : `<button class="btn-success btn-sm" onclick="activateFromRow('${u.id}')">تفعيل الحساب</button>`;
 
-                let userDevicesCount = data.devices ? data.devices.length : 0;
-                let maxDevices = data.max_devices || 1;
-                let devicesHtml = `<button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick='openDevicesModal("${data.id}")'><i class="fas fa-desktop"></i> ${userDevicesCount} / ${maxDevices}</button>`;
-
-                html += `
-                    <tr>
-                        <td>${escapeHtml(data.email)}</td>
-                        <td>${dateStr}</td>
-                        <td>${downloadsStatsHtml}</td>
-                        <td>${statusBadge}</td>
-                        <td>
-                            <select id="pkgSelect_${data.id}" onchange="updateUserPackage('${data.id}', this.value)" style="width: 150px;">
-                                ${pkgOptions}
-                            </select>
-                        </td>
-                        <td>${devicesHtml}</td>
-                        <td style="white-space:nowrap;">
-                            <button class="btn-primary" style="padding:4px 8px; font-size:12px;" title="سجل التحميلات" onclick='openHistoryModal("${data.id}")'><i class="fas fa-history"></i></button>
-                            <button class="btn-primary" style="padding:4px 8px; font-size:12px;" title="إرسال رابط إعادة تعيين كلمة المرور" onclick='resetUserPassword("${data.id}")'><i class="fas fa-key"></i></button>
-                            ${data.status === 'trial' ? 
-                                `<button class="btn-success" onclick="activateUser('${data.id}')">تفعيل الحساب</button>` : 
-                                `<button class="btn-danger" onclick="updateUserStatus('${data.id}', 'trial')">إلغاء التفعيل</button>`
-                            }
-                        </td>
-                    </tr>
-                `;
+                html += `<tr>
+                    <td>${escapeHtml(u.email)}<div class="sub" style="margin-top:3px;">${extras.join(' · ')}</div></td>
+                    <td>${fmtDate(u.createdAt)}</td>
+                    <td><div><strong>${u.totalDownloads || 0}</strong> فيديو</div><div class="sub">${fmtSize(u.totalDownloadedMB || 0)}</div></td>
+                    <td>${statusBadge}</td>
+                    <td><select id="pkgSelect_${u.id}" style="width: 150px;">${pkgOptions}</select></td>
+                    <td>${devicesHtml}</td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-sm" title="سجل التحميلات" onclick='openHistoryModal("${u.id}")'><i class="fas fa-history"></i></button>
+                        <button class="btn-sm" title="إرسال رابط إعادة تعيين كلمة المرور" onclick='resetUserPassword("${u.id}")'><i class="fas fa-key"></i></button>
+                        ${actions}
+                    </td></tr>`;
             });
-            if(html === "") html = `<tr><td colspan="7" style="text-align:center;">لا يوجد نتائج مطابقة للبحث</td></tr>`;
-            document.getElementById('usersTableBody').innerHTML = html;
+            document.getElementById('usersTableBody').innerHTML = html || `<tr><td colspan="7" style="text-align:center;">لا يوجد نتائج مطابقة للبحث</td></tr>`;
         }
 
-        // =======================
-        // Manage Devices Logic
-        // =======================
+        // التفعيل/التجديد: لو الاشتراك لسه شغال المدة الجديدة بتتضاف على آخره (مايضيعش الأيام الباقية)
+        async function activateUserWithPackage(user, pkg, extra = {}) {
+            const now = Date.now();
+            const curExp = ms(user.expiresAt);
+            const base = (user.status === 'active' && curExp > now) ? curExp : now;
+            const exp = base + (parseInt(pkg.duration) || 30) * DAY;
+            const upd = { status: 'active', package: pkg.name, packageId: pkg.id, expiresAt: TS.fromMillis(exp) };
+            if (parseInt(pkg.maxDevices) > (user.max_devices || 1)) upd.max_devices = parseInt(pkg.maxDevices);
+            if (extra.telegramChatId && !user.telegramChatId) upd.telegramChatId = String(extra.telegramChatId);
+            await db.collection("users").doc(user.id).update(upd);
+            await applyReferralReward(user);
+            return exp;
+        }
+
+        // مكافأة الدعوة: أول مرة المدعو يشترك، اللي دعاه ياخد أيام زيادة
+        async function applyReferralReward(user) {
+            const bonus = appConfig.referralBonusDays;
+            if (!user.referredBy || user.referralRewarded || !(bonus > 0)) return;
+            const snap = await db.collection('users').where('referralCode', '==', user.referredBy).limit(1).get();
+            const userRef = db.collection('users').doc(user.id);
+            if (snap.empty || snap.docs[0].id === user.id) { await userRef.update({ referralRewarded: true }); return; }
+            const refDoc = snap.docs[0], r = refDoc.data(), now = Date.now();
+            const upd = { referralCount: FV.increment(1) };
+            if (r.status === 'active') upd.expiresAt = TS.fromMillis(Math.max(ms(r.expiresAt), now) + bonus * DAY);
+            else upd.trialBonusDays = FV.increment(bonus);
+            const batch = db.batch();
+            batch.update(refDoc.ref, upd);
+            batch.update(userRef, { referralRewarded: true, referralRewardedTo: refDoc.id });
+            await batch.commit();
+        }
+
+        async function activateFromRow(userId) {
+            const user = globalUsers.find(u => u.id === userId);
+            const pkgId = document.getElementById(`pkgSelect_${userId}`).value;
+            const pkg = globalPackages.find(p => p.id === pkgId);
+            if (!user) return;
+            if (!pkg) return alert("يجب اختيار باقة للعميل قبل التفعيل!");
+            const renewing = userState(user) === 'active';
+            if (!confirm(`${renewing ? 'تجديد' : 'تفعيل'} ${user.email}\nالباقة: ${pkg.name} (${pkg.duration} يوم)${renewing ? '\nالمدة هتتضاف على تاريخ الانتهاء الحالي' : ''}`)) return;
+            try {
+                const exp = await activateUserWithPackage(user, pkg);
+                alert("✅ صالح لحد " + new Date(exp).toLocaleDateString('ar-EG'));
+            } catch (e) { alert("خطأ: " + e.message); }
+        }
+        function updateUserStatus(userId, newStatus) {
+            if (!confirm("إلغاء تفعيل الحساب؟")) return;
+            db.collection("users").doc(userId).update({ status: newStatus });
+        }
+
+        // ======================= الأجهزة =======================
         function openDevicesModal(userId) {
             const user = globalUsers.find(u => u.id === userId);
             if (!user) return;
-            
             document.getElementById('manageDevicesUserId').value = userId;
             document.getElementById('manageMaxDevices').value = user.max_devices || 1;
-            
-            let devicesListHtml = "";
-            if (user.devices && user.devices.length > 0) {
-                user.devices.forEach((devId, index) => {
-                    devicesListHtml += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; background:var(--bg-elevated); border-radius:5px;">
-                            <span style="font-family:monospace; font-size:12px; color:var(--text-sub); word-break:break-all;">جهاز ${index + 1}: ${devId}</span>
-                            <button class="btn-danger" style="padding:4px 8px; font-size:12px;" onclick="removeSingleDevice('${userId}', '${devId}')"><i class="fas fa-times"></i> فك</button>
-                        </div>
-                    `;
-                });
-            } else {
-                devicesListHtml = `<div style="text-align:center; color:var(--text-sub);">لا توجد أجهزة مسجلة لهذا الحساب.</div>`;
-            }
-            
-            document.getElementById('devicesList').innerHTML = devicesListHtml;
+            let h = "";
+            (user.devices || []).forEach((devId, i) => {
+                h += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; background:var(--bg-elevated); border-radius:5px;">
+                        <span style="font-family:monospace; font-size:12px; color:var(--text-sub); word-break:break-all;">جهاز ${i + 1}: ${escapeHtml(devId)}</span>
+                        <button class="btn-danger btn-sm" onclick="removeSingleDevice('${userId}', ${i})"><i class="fas fa-times"></i> فك</button>
+                      </div>`;
+            });
+            document.getElementById('devicesList').innerHTML = h || `<div style="text-align:center; color:var(--text-sub);">لا توجد أجهزة مسجلة لهذا الحساب.</div>`;
             document.getElementById('manageDevicesModal').style.display = 'flex';
         }
-
         function saveMaxDevices() {
             const userId = document.getElementById('manageDevicesUserId').value;
             const newMax = parseInt(document.getElementById('manageMaxDevices').value) || 1;
@@ -609,36 +806,22 @@
               .then(() => alert("تم تحديث الحد الأقصى للأجهزة بنجاح"))
               .catch(e => alert("خطأ: " + e.message));
         }
-
         function clearAllDevices() {
-            if(confirm("هل أنت متأكد من مسح جميع الأجهزة المسجلة لهذا الحساب؟")) {
-                const userId = document.getElementById('manageDevicesUserId').value;
-                db.collection("users").doc(userId).update({ devices: [] })
-                  .then(() => {
-                      alert("تم تصفير الأجهزة بنجاح.");
-                      document.getElementById('manageDevicesModal').style.display = 'none';
-                  })
-                  .catch(e => alert("خطأ: " + e.message));
-            }
+            if (!confirm("هل أنت متأكد من مسح جميع الأجهزة المسجلة لهذا الحساب؟")) return;
+            const userId = document.getElementById('manageDevicesUserId').value;
+            db.collection("users").doc(userId).update({ devices: [] })
+              .then(() => { alert("تم تصفير الأجهزة بنجاح."); closeModal('manageDevicesModal'); })
+              .catch(e => alert("خطأ: " + e.message));
+        }
+        function removeSingleDevice(userId, index) {
+            const user = globalUsers.find(u => u.id === userId);
+            const devId = user && (user.devices || [])[index];
+            if (!devId || !confirm("هل أنت متأكد من فك ارتباط هذا الجهاز فقط؟")) return;
+            db.collection("users").doc(userId).update({ devices: FV.arrayRemove(devId) })
+              .then(() => closeModal('manageDevicesModal'))
+              .catch(e => alert("خطأ: " + e.message));
         }
 
-        function removeSingleDevice(userId, devId) {
-            if(confirm("هل أنت متأكد من فك ارتباط هذا الجهاز فقط؟")) {
-                db.collection("users").doc(userId).update({
-                    devices: firebase.firestore.FieldValue.arrayRemove(devId)
-                }).then(() => {
-                    document.getElementById('manageDevicesModal').style.display = 'none';
-                }).catch(e => alert("خطأ: " + e.message));
-            }
-        }
-
-        function escapeHtml(v) {
-            return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        }
-
-        // =======================
-        // Reset Password
-        // =======================
         function resetUserPassword(userId) {
             const user = globalUsers.find(u => u.id === userId);
             if (!user || !user.email) return alert("المستخدم ده مالوش بريد مسجل");
@@ -648,9 +831,7 @@
                 .catch(e => alert("خطأ: " + e.message));
         }
 
-        // =======================
-        // Download History
-        // =======================
+        // ======================= سجل التحميلات =======================
         function openHistoryModal(userId) {
             const user = globalUsers.find(u => u.id === userId);
             document.getElementById('historyUserId').value = userId;
@@ -658,7 +839,6 @@
             document.getElementById('historyModal').style.display = 'flex';
             loadUserHistory();
         }
-
         function loadUserHistory() {
             const userId = document.getElementById('historyUserId').value;
             const list = document.getElementById('historyList');
@@ -671,30 +851,27 @@
                   snap.forEach(doc => {
                       const d = doc.data();
                       const when = d.completedAt && d.completedAt.toDate ? d.completedAt.toDate().toLocaleString('ar-EG') : '';
-                      const size = d.sizeMB ? (d.sizeMB > 1024 ? (d.sizeMB / 1024).toFixed(1) + ' GB' : d.sizeMB.toFixed(0) + ' MB') : '';
+                      const size = d.sizeMB ? fmtSize(d.sizeMB) : '';
                       const safeUrl = /^https?:\/\//i.test(d.url || '') ? escapeHtml(d.url) : '#';
                       html += `
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; padding:8px; background:var(--bg-elevated); border-radius:5px;">
                             <div style="min-width:0; flex:1;">
                                 <div style="font-size:13px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(d.title || '')}</div>
                                 <a href="${safeUrl}" target="_blank" rel="noopener" style="font-size:12px; color:var(--accent-blue); direction:ltr; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(d.url)}</a>
-                                <div style="font-size:11px; color:var(--text-sub);">${escapeHtml(when)}${size ? ' — ' + size : ''}</div>
+                                <div class="sub">${escapeHtml(when)}${size ? ' — ' + size : ''}</div>
                             </div>
-                            <button class="btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deleteHistoryItem('${doc.id}')"><i class="fas fa-trash"></i></button>
+                            <button class="btn-danger btn-sm" onclick="deleteHistoryItem('${doc.id}')"><i class="fas fa-trash"></i></button>
                         </div>`;
                   });
                   list.innerHTML = html;
               })
               .catch(e => { list.innerHTML = `<div style="text-align:center; color:var(--accent-red);">خطأ: ${escapeHtml(e.message)}</div>`; });
         }
-
         function deleteHistoryItem(docId) {
             const userId = document.getElementById('historyUserId').value;
             db.collection("users").doc(userId).collection("downloads").doc(docId).delete()
-              .then(loadUserHistory)
-              .catch(e => alert("خطأ: " + e.message));
+              .then(loadUserHistory).catch(e => alert("خطأ: " + e.message));
         }
-
         async function clearUserHistory() {
             const userId = document.getElementById('historyUserId').value;
             if (!confirm("مسح سجل التحميلات بالكامل لهذا المستخدم؟")) return;
@@ -710,30 +887,234 @@
             loadUserHistory();
         }
 
-        function activateUser(userId) {
-            const pkgSelect = document.getElementById(`pkgSelect_${userId}`);
-            const pkgName = pkgSelect.value;
-            if(!pkgName) return alert("يجب اختيار باقة للعميل قبل التفعيل!");
-            
-            const pkgData = globalPackages.find(p => p.name === pkgName);
-            const durationDays = pkgData ? (pkgData.duration || 30) : 30; // Default 30 if not found
-            
-            const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + durationDays);
-            
-            db.collection("users").doc(userId).update({ 
-                status: 'active',
-                package: pkgName,
-                expiresAt: firebase.firestore.Timestamp.fromDate(expiresAt)
+        // ======================= الطلبات =======================
+        function renderOrders() {
+            const f = document.getElementById('filterOrders').value;
+            const pending = globalOrders.filter(o => o.status === 'pending').length;
+            const pc = document.getElementById('pendingCount');
+            pc.textContent = pending; pc.style.display = pending ? 'inline-block' : 'none';
+            let html = "";
+            globalOrders.forEach(o => {
+                if (f !== 'all' && o.status !== f) return;
+                const badge = o.status === 'approved' ? '<span class="badge badge-active">متفعّل</span>'
+                            : o.status === 'rejected' ? '<span class="badge badge-expired">مرفوض</span>'
+                            : '<span class="badge badge-trial">قيد المراجعة</span>';
+                const notified = o.status !== 'pending' ? `<div class="sub" style="margin-top:4px;">${o.userNotified ? '✓ العميل اتبلّغ' : '… هيتبلّغ لما البوت يصحى'}</div>` : '';
+                const amount = o.coupon
+                    ? `<strong>${fmtMoney(o.finalPrice)}</strong><div class="sub">${escapeHtml(o.price)} − ${o.discountPercent}% (${escapeHtml(o.coupon)})</div>`
+                    : `<strong>${o.finalPrice ? fmtMoney(o.finalPrice) : escapeHtml(o.price)}</strong>`;
+                html += `<tr>
+                    <td><strong>#${o.id.slice(0, 6)}</strong><div class="sub">${ms(o.createdAt) ? new Date(ms(o.createdAt)).toLocaleString('ar-EG') : ''}</div></td>
+                    <td>${escapeHtml(o.name)}<div class="sub">${escapeHtml(o.email)} · ${escapeHtml(o.phone)}${o.tgUsername ? ' · @' + escapeHtml(o.tgUsername) : ''}</div></td>
+                    <td>${escapeHtml(o.packageName)}</td>
+                    <td>${amount}</td>
+                    <td>${badge}${notified}${o.rejectReason ? `<div class="sub">${escapeHtml(o.rejectReason)}</div>` : ''}</td>
+                    <td style="white-space:nowrap;">${o.status === 'pending'
+                        ? `<button class="btn-success btn-sm" onclick="approveOrder('${o.id}')"><i class="fas fa-check"></i> تفعيل</button>
+                           <button class="btn-danger btn-sm" onclick="rejectOrder('${o.id}')"><i class="fas fa-times"></i> رفض</button>`
+                        : `<span class="sub">${ms(o.decidedAt) ? new Date(ms(o.decidedAt)).toLocaleDateString('ar-EG') : ''}</span>`}</td>
+                </tr>`;
+            });
+            document.getElementById('ordersBody').innerHTML = html || `<tr><td colspan="6" style="text-align:center;">مفيش طلبات</td></tr>`;
+        }
+        async function approveOrder(orderId) {
+            const o = globalOrders.find(x => x.id === orderId);
+            if (!o || o.status !== 'pending') return;
+            const user = globalUsers.find(u => u.id === o.uid) || globalUsers.find(u => (u.email || '').toLowerCase() === (o.email || '').toLowerCase());
+            if (!user) return alert("مالقيتش حساب بالإيميل ده: " + o.email);
+            const pkg = globalPackages.find(p => p.id === o.packageId) || globalPackages.find(p => p.name === o.packageName);
+            if (!pkg) return alert("الباقة دي اتمسحت. فعّل العميل يدوي من صفحة العملاء.");
+            if (!confirm(`تفعيل ${user.email}\nالباقة: ${pkg.name} (${pkg.duration} يوم)\nالمبلغ: ${o.finalPrice || o.price}\n\nاتأكدت من الإيصال على تيليجرام؟`)) return;
+            try {
+                const exp = await activateUserWithPackage(user, pkg, { telegramChatId: o.chatId });
+                await db.collection('orders').doc(orderId).update({ status: 'approved', decidedAt: FV.serverTimestamp(), userNotified: false, activatedUntil: TS.fromMillis(exp) });
+            } catch (e) { alert("خطأ: " + e.message); }
+        }
+        async function rejectOrder(orderId) {
+            const reason = prompt("سبب الرفض (هيوصل للعميل، ممكن تسيبه فاضي):", "");
+            if (reason === null) return;
+            try {
+                await db.collection('orders').doc(orderId).update({ status: 'rejected', rejectReason: reason.trim().slice(0, 200), decidedAt: FV.serverTimestamp(), userNotified: false });
+            } catch (e) { alert("خطأ: " + e.message); }
+        }
+
+        // ======================= الكوبونات =======================
+        function renderCoupons() {
+            let html = "";
+            globalCoupons.sort((a, b) => ms(b.createdAt) - ms(a.createdAt)).forEach(c => {
+                const pkgNames = (c.packageIds || []).map(id => (globalPackages.find(p => p.id === id) || {}).name || '؟').join('، ') || 'كل الباقات';
+                const expired = c.expiresAt && ms(c.expiresAt) < Date.now();
+                const used = c.maxUses > 0 && (c.uses || 0) >= c.maxUses;
+                const badge = c.active === false ? '<span class="badge badge-muted">متوقف</span>'
+                            : expired ? '<span class="badge badge-expired">منتهي</span>'
+                            : used ? '<span class="badge badge-expired">خلص</span>'
+                            : '<span class="badge badge-active">شغال</span>';
+                html += `<tr>
+                    <td dir="ltr" style="text-align:right;"><strong>${escapeHtml(c.id)}</strong></td>
+                    <td>${c.percent}%</td>
+                    <td>${c.uses || 0} / ${c.maxUses > 0 ? c.maxUses : '∞'}</td>
+                    <td>${escapeHtml(pkgNames)}</td>
+                    <td>${c.expiresAt ? fmtDate(c.expiresAt) : '-'}</td>
+                    <td>${badge}</td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-ghost btn-sm" onclick="toggleCoupon('${c.id}')">${c.active === false ? 'تشغيل' : 'إيقاف'}</button>
+                        <button class="btn-danger btn-sm" onclick="deleteCoupon('${c.id}')"><i class="fas fa-trash"></i></button>
+                    </td></tr>`;
+            });
+            document.getElementById('couponsBody').innerHTML = html || `<tr><td colspan="7" style="text-align:center;">مفيش كوبونات</td></tr>`;
+        }
+        async function addCoupon() {
+            const code = document.getElementById('cpCode').value.trim().toUpperCase();
+            const percent = parseInt(document.getElementById('cpPercent').value);
+            const maxUses = Math.max(0, parseInt(document.getElementById('cpMaxUses').value) || 0);
+            const exp = document.getElementById('cpExpires').value;
+            const pkgId = document.getElementById('cpPackage').value;
+            if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return alert("الكود: حروف إنجليزي وأرقام بس (3–30)");
+            if (!(percent >= 1 && percent <= 100)) return alert("الخصم من 1 لـ 100%");
+            if (globalCoupons.some(c => c.id === code)) return alert("الكود ده موجود بالفعل");
+            const data = { percent, maxUses, uses: 0, active: true, packageIds: pkgId ? [pkgId] : [], createdAt: FV.serverTimestamp() };
+            if (exp) data.expiresAt = TS.fromDate(new Date(exp + 'T23:59:59'));
+            try {
+                await db.collection('coupons').doc(code).set(data);
+                ['cpCode', 'cpPercent', 'cpExpires'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('cpMaxUses').value = 0;
+            } catch (e) { alert("خطأ: " + e.message); }
+        }
+        function toggleCoupon(code) {
+            const c = globalCoupons.find(x => x.id === code);
+            if (c) db.collection('coupons').doc(code).update({ active: c.active === false });
+        }
+        function deleteCoupon(code) {
+            if (confirm("حذف الكوبون " + code + "؟")) db.collection('coupons').doc(code).delete();
+        }
+
+        // ======================= الإحصائيات =======================
+        function kpi(label, value, sub) {
+            return `<div class="card kpi"><div class="kpi-lbl">${label}</div><div class="kpi-val">${value}</div>${sub ? `<div class="kpi-sub">${sub}</div>` : ''}</div>`;
+        }
+
+        // رسم أعمدة بسيط (سلسلة واحدة، لون واحد، tooltip عند المرور)
+        function barChart(containerId, tipId, labels, values, fmt, tickEvery) {
+            const el = document.getElementById(containerId);
+            const W = Math.max(280, el.clientWidth || 600), H = 220, padL = 48, padR = 8, padT = 10, padB = 26;
+            const max = Math.max(1, ...values);
+            const step = Math.pow(10, Math.floor(Math.log10(max)));
+            const top = Math.ceil(max / step) * step;
+            const n = values.length, slot = (W - padL - padR) / n, bw = Math.max(2, slot - 2);
+            let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" direction="ltr" role="img">`;
+            for (let i = 0; i <= 4; i++) {
+                const y = padT + (H - padT - padB) * (1 - i / 4);
+                svg += `<line class="grid" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}" />`;
+                svg += `<text class="axis" x="${padL - 6}" y="${y + 3}" text-anchor="end">${Math.round(top * i / 4).toLocaleString('ar-EG')}</text>`;
+            }
+            values.forEach((v, i) => {
+                const h = (H - padT - padB) * (v / top);
+                const x = padL + i * slot + 1, y = H - padB - h;
+                const r = Math.min(4, bw / 2, h);
+                // عمود بأطراف مدوّرة من فوق بس
+                const d = h <= 0 ? '' : `M${x},${H - padB} V${y + r} Q${x},${y} ${x + r},${y} H${x + bw - r} Q${x + bw},${y} ${x + bw},${y + r} V${H - padB} Z`;
+                svg += `<rect class="hit" x="${padL + i * slot}" y="${padT}" width="${slot}" height="${H - padT - padB}" fill="transparent" data-i="${i}" />`;
+                if (d) svg += `<path class="bar" d="${d}" style="pointer-events:none" />`;
+                if (i % tickEvery === 0 || i === n - 1) svg += `<text class="axis" x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${escapeHtml(labels[i])}</text>`;
+            });
+            svg += `</svg>`;
+            el.innerHTML = svg;
+            const tip = document.getElementById(tipId);
+            el.querySelectorAll('.hit').forEach(rect => {
+                rect.addEventListener('mousemove', e => {
+                    const i = +rect.dataset.i;
+                    tip.innerHTML = `<strong>${escapeHtml(labels[i])}</strong><br>${fmt(values[i])}`;
+                    const box = el.parentElement.getBoundingClientRect();
+                    tip.style.display = 'block';
+                    tip.style.left = Math.min(e.clientX - box.left + 12, box.width - tip.offsetWidth - 4) + 'px';
+                    tip.style.top = (e.clientY - box.top - 40) + 'px';
+                });
+                rect.addEventListener('mouseleave', () => tip.style.display = 'none');
             });
         }
 
-        function updateUserStatus(userId, newStatus) {
-            db.collection("users").doc(userId).update({ status: newStatus });
-        }
+        window.addEventListener('resize', () => { clearTimeout(window.__rs); window.__rs = setTimeout(renderStats, 200); });
+        function renderStats() {
+            if (!document.getElementById('statsPage').classList.contains('active')) return;
+            const now = Date.now();
+            let active = 0, trial = 0, expired = 0, new7 = 0, new30 = 0, linked = 0;
+            const byPkg = {};
+            const expiring = [];
+            globalUsers.forEach(u => {
+                const st = userState(u);
+                if (st === 'active') {
+                    active++;
+                    const name = u.package || 'بدون اسم';
+                    byPkg[name] = (byPkg[name] || 0) + 1;
+                    if (ms(u.expiresAt) - now <= 7 * DAY) expiring.push(u);
+                } else if (st === 'trial') trial++; else expired++;
+                const age = now - ms(u.createdAt);
+                if (ms(u.createdAt) && age <= 7 * DAY) new7++;
+                if (ms(u.createdAt) && age <= 30 * DAY) new30++;
+                if (u.telegramChatId) linked++;
+            });
+            const approved = globalOrders.filter(o => o.status === 'approved');
+            const amount = o => o.finalPrice || o.priceValue || 0;
+            const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+            const revMonth = approved.filter(o => ms(o.decidedAt || o.createdAt) >= monthStart.getTime()).reduce((s, o) => s + amount(o), 0);
+            const revTotal = approved.reduce((s, o) => s + amount(o), 0);
+            const pending = globalOrders.filter(o => o.status === 'pending').length;
+            const totalDl = globalUsers.reduce((s, u) => s + (u.totalDownloads || 0), 0);
+            const totalMB = globalUsers.reduce((s, u) => s + (u.totalDownloadedMB || 0), 0);
+            const everPaid = globalUsers.filter(u => u.status === 'active' || u.package).length;
+            const conv = globalUsers.length ? Math.round(100 * everPaid / globalUsers.length) : 0;
 
-        function updateUserPackage(userId, pkgName) {
-            db.collection("users").doc(userId).update({ package: pkgName });
+            document.getElementById('kpis').innerHTML =
+                kpi('إجمالي العملاء', globalUsers.length.toLocaleString('ar-EG'), `+${new7} الأسبوع ده · +${new30} في 30 يوم`) +
+                kpi('مشتركين نشطين', active.toLocaleString('ar-EG'), `${conv}% من العملاء اشتركوا مرة على الأقل`) +
+                kpi('فترة تجريبية', trial.toLocaleString('ar-EG'), `${expired.toLocaleString('ar-EG')} منتهي`) +
+                kpi('إيرادات الشهر ده', fmtMoney(revMonth), `الإجمالي ${fmtMoney(revTotal)} من ${approved.length} طلب`) +
+                kpi('طلبات مستنية', pending.toLocaleString('ar-EG'), pending ? '<a href="#" onclick="switchPage(\'ordersPage\', document.querySelectorAll(\'.nav-item\')[1]); return false;" style="color:var(--accent-blue);">راجعها</a>' : 'مفيش حاجة مستنية') +
+                kpi('إجمالي التحميلات', totalDl.toLocaleString('ar-EG'), fmtSize(totalMB) + ` · ${linked} مربوط بتيليجرام`);
+
+            // تسجيلات آخر 30 يوم
+            const days = [], counts = [];
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date(today.getTime() - i * DAY);
+                days.push(d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }));
+                counts.push(0);
+            }
+            globalUsers.forEach(u => {
+                const t = ms(u.createdAt); if (!t) return;
+                const idx = 29 - Math.floor((today.getTime() + DAY - 1 - t) / DAY);
+                if (idx >= 0 && idx < 30) counts[idx]++;
+            });
+            barChart('chartSignups', 'tipSignups', days, counts, v => v.toLocaleString('ar-EG') + ' تسجيل', 5);
+
+            // الإيرادات آخر 6 شهور
+            const months = [], rev = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); d.setMonth(d.getMonth() - i);
+                months.push({ start: d.getTime(), label: d.toLocaleDateString('ar-EG', { month: 'short', year: '2-digit' }) });
+            }
+            months.forEach((m, i) => {
+                const end = i < 5 ? months[i + 1].start : Infinity;
+                rev.push(approved.filter(o => { const t = ms(o.decidedAt || o.createdAt); return t >= m.start && t < end; }).reduce((s, o) => s + amount(o), 0));
+            });
+            barChart('chartRevenue', 'tipRevenue', months.map(m => m.label), rev, fmtMoney, 1);
+
+            // توزيع الباقات
+            const entries = Object.entries(byPkg).sort((a, b) => b[1] - a[1]);
+            const maxP = Math.max(1, ...entries.map(e => e[1]));
+            document.getElementById('pkgDistribution').innerHTML = entries.length ? entries.map(([name, n]) => `
+                <div class="hbar-row"><span>${escapeHtml(name)}</span>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:${(100 * n / maxP).toFixed(1)}%"></div></div>
+                    <span class="sub">${n} (${Math.round(100 * n / active)}%)</span></div>`).join('')
+                : '<div class="sub">مفيش مشتركين نشطين</div>';
+
+            // هتخلص قريب
+            expiring.sort((a, b) => ms(a.expiresAt) - ms(b.expiresAt));
+            document.getElementById('expiringBody').innerHTML = expiring.length ? expiring.slice(0, 15).map(u => `
+                <tr><td>${escapeHtml(u.email)}<div class="sub">${escapeHtml(u.package || '')}</div></td>
+                    <td>${fmtDate(u.expiresAt)}<div class="sub">فاضل ${Math.ceil((ms(u.expiresAt) - now) / DAY)} يوم</div></td>
+                    <td>${u.telegramChatId ? '<span class="sub">✓ هيوصله تذكير</span>' : '<span class="sub">مش مربوط بتيليجرام</span>'}</td></tr>`).join('')
+                : '<tr><td class="sub">مفيش اشتراكات هتخلص الأسبوع ده</td></tr>';
         }
     </script>
 </body>

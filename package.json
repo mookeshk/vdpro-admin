@@ -1,17 +1,19 @@
 {
   "name": "telegrambot",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "Video Downloader Pro — Telegram bot + license server",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "gen-key": "node tools/gen-license-key.js"
   },
-  "keywords": [],
-  "author": "",
+  "engines": {
+    "node": ">=18"
+  },
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "firebase": "^8.10.1",
+    "firebase-admin": "^12.7.0",
     "node-telegram-bot-api": "^1.2.0"
   }
 }
